@@ -35,6 +35,10 @@ public class NativeAd internal constructor(
                 impressionUrl = response.impressionUrl,
                 trackToken = response.trackToken,
             )
+            pluga.fireViewable(
+                slotId = slotId,
+                trackToken = response.trackToken,
+            )
         }
         container.setOnClickListener {
             listener?.onClick()

@@ -134,6 +134,21 @@ public class AdPluga private constructor(
         }
     }
 
+    public fun fireViewable(slotId: String, trackToken: String) {
+        if (destroyed.get()) return
+        internalScope.launch {
+            try {
+                transport.postTrack(
+                    path = "v1/track/viewable",
+                    token = trackToken,
+                    payload = mapOf("event" to "viewable", "slot" to slotId),
+                )
+            } catch (t: Throwable) {
+                AdPlugaLogger.debug("viewable fire failed slot=$slotId", t)
+            }
+        }
+    }
+
     public fun fireClick(slotId: String, ad: Ad, clickUrl: String?, trackToken: String) {
         if (destroyed.get()) return
         internalScope.launch {

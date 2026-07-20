@@ -109,6 +109,10 @@ public class InterstitialAd internal constructor(
                 impressionUrl = response.impressionUrl,
                 trackToken = response.trackToken,
             )
+            pluga.fireViewable(
+                slotId = slotId,
+                trackToken = response.trackToken,
+            )
         }
         dialog.show()
     }

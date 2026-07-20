@@ -155,6 +155,28 @@ class AdPlugaTest {
         assertEquals("COIN", response.ad.rewardCurrency)
     }
 
+    @Test
+    fun `fireViewable posts v1 track viewable with token payload`() = runTest {
+        server.enqueue(MockResponse().setResponseCode(204))
+        val pluga = AdPluga.initialize(
+            publisherKey = "pk_test_abcdef123",
+            endpoint = server.url("/").toString().trimEnd('/'),
+        )
+        pluga.fireViewable(slotId = "slot_v", trackToken = "tok_xyz")
+        val recorded = withTimeoutOrNull(2_000L) {
+            var r = server.takeRequest()
+            while (!r.path.orEmpty().contains("/v1/track/viewable")) {
+                r = server.takeRequest()
+            }
+            r
+        }
+        assertNotNull(recorded)
+        assertEquals("POST", recorded!!.method)
+        val body = recorded.body.readUtf8()
+        assertTrue(body.contains("\"token\":\"tok_xyz\""))
+        assertTrue(body.contains("\"event\":\"viewable\""))
+    }
+
     private val displayFixture = """
         {
           "ad": {

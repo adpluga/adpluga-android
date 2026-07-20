@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.adpluga"
-version = "0.2.0"
+version = "0.3.0"
 
 android {
     namespace = "com.adpluga"
@@ -15,7 +15,7 @@ android {
     defaultConfig {
         minSdk = 24
         consumerProguardFiles("consumer-rules.pro")
-        buildConfigField("String", "SDK_VERSION", "\"0.2.0\"")
+        buildConfigField("String", "SDK_VERSION", "\"0.3.0\"")
         buildConfigField("String", "SDK_PLATFORM", "\"android\"")
     }
 
@@ -68,7 +68,7 @@ mavenPublishing {
     publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 
-    coordinates("com.adpluga", "adpluga", "0.2.0")
+    coordinates("com.adpluga", "adpluga", "0.3.0")
 
     pom {
         name.set("AdPluga Android SDK")

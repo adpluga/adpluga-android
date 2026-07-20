@@ -234,6 +234,10 @@ public class AdView @JvmOverloads constructor(
                 impressionUrl = response.impressionUrl,
                 trackToken = response.trackToken,
             )
+            pluga.fireViewable(
+                slotId = slotId.orEmpty(),
+                trackToken = response.trackToken,
+            )
         }
     }
 

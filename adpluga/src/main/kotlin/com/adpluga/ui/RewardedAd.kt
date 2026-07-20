@@ -129,6 +129,10 @@ public class RewardedAd internal constructor(
                     impressionUrl = response.impressionUrl,
                     trackToken = response.trackToken,
                 )
+                pluga.fireViewable(
+                    slotId = slotId,
+                    trackToken = response.trackToken,
+                )
                 video.load(
                     videoUrl = response.ad.assetUrl,
                     quartilePings = response.quartilePings,
@@ -181,6 +185,10 @@ public class RewardedAd internal constructor(
                 slotId = slotId,
                 ad = response.ad,
                 impressionUrl = response.impressionUrl,
+                trackToken = response.trackToken,
+            )
+            pluga.fireViewable(
+                slotId = slotId,
                 trackToken = response.trackToken,
             )
             handler.postDelayed(tickRunnable, 1_000L)
