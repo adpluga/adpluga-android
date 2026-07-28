@@ -4,6 +4,14 @@ All notable changes to the AdPluga Android SDK are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] — 2026-07
+
+### Fixed
+- QuartileFirer now resolves relative ping URLs against the SDK endpoint
+  using `java.net.URL(URL(base), raw)`, fixing quartile tracking when the
+  backend returns relative paths.
+- VideoAdView passes `pluga.endpoint` to QuartileFirer constructor.
+
 ## [0.3.0] — 2026-07
 
 ### Added
