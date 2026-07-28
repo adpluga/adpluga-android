@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap.newKeySet
 internal class QuartileFirer(
     private val pings: Map<String, String>?,
     private val scope: CoroutineScope,
+    private val endpoint: String? = null,
 ) {
     private val fired = newKeySet<String>()
 
@@ -31,10 +32,21 @@ internal class QuartileFirer(
 
     fun reset() = fired.clear()
 
+    private fun resolveUrl(raw: String): String {
+        if (raw.startsWith("http://") || raw.startsWith("https://")) return raw
+        val base = endpoint ?: return raw
+        return try {
+            URL(URL(base), raw).toString()
+        } catch (_: Throwable) {
+            raw
+        }
+    }
+
     private fun fire(url: String) {
+        val resolved = resolveUrl(url)
         scope.launch(Dispatchers.IO) {
             try {
-                val conn = URL(url).openConnection() as HttpURLConnection
+                val conn = URL(resolved).openConnection() as HttpURLConnection
                 conn.connectTimeout = 3_000
                 conn.readTimeout = 3_000
                 conn.requestMethod = "GET"
@@ -45,7 +57,7 @@ internal class QuartileFirer(
             } catch (ce: CancellationException) {
                 throw ce
             } catch (t: Throwable) {
-                AdPlugaLogger.debug("quartile beacon failed url=$url", t)
+                AdPlugaLogger.debug("quartile beacon failed url=$resolved", t)
             }
         }
     }

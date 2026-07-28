@@ -8,7 +8,8 @@ public enum class AdKind(public val wire: String) {
     NATIVE("native"),
     TEMPLATE("template"),
     VIDEO("video"),
-    VIDEO_REWARDED("video_rewarded");
+    VIDEO_REWARDED("video_rewarded"),
+    AUDIO("audio");
 
     public companion object {
         public fun fromWire(wire: String): AdKind =

@@ -78,7 +78,7 @@ public class VideoAdView @JvmOverloads constructor(
         if (destroyed) return
         val pluga = AdPluga.maybeInstance ?: return
         val url = videoUrl?.takeIf { it.isNotEmpty() } ?: return
-        quartileFirer = QuartileFirer(quartilePings, pluga.internalScope)
+        quartileFirer = QuartileFirer(quartilePings, pluga.internalScope, pluga.endpoint)
         pendingUrl = url
         if (surfaceView.holder.surface?.isValid == true) {
             preparePlayer(url)

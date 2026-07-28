@@ -84,7 +84,7 @@ public class AdView @JvmOverloads constructor(
                     AdKind.HTML -> withContext(Dispatchers.Main) {
                         renderHtml(pluga, response)
                     }
-                    AdKind.VIDEO -> withContext(Dispatchers.Main) {
+                    AdKind.VIDEO, AdKind.VIDEO_REWARDED, AdKind.AUDIO -> withContext(Dispatchers.Main) {
                         renderVideo(pluga, response)
                     }
                     else -> {
@@ -122,7 +122,7 @@ public class AdView @JvmOverloads constructor(
             renderHtml(pluga, response)
             return
         }
-        if (response.ad.kind == AdKind.VIDEO) {
+        if (response.ad.kind == AdKind.VIDEO || response.ad.kind == AdKind.VIDEO_REWARDED || response.ad.kind == AdKind.AUDIO) {
             renderVideo(pluga, response)
             return
         }
@@ -261,7 +261,7 @@ public class AdView @JvmOverloads constructor(
     }
 
     private companion object {
-        val RENDERABLE_KINDS = setOf(AdKind.IMAGE, AdKind.TEMPLATE, AdKind.HTML, AdKind.VIDEO)
+        val RENDERABLE_KINDS = setOf(AdKind.IMAGE, AdKind.TEMPLATE, AdKind.HTML, AdKind.VIDEO, AdKind.VIDEO_REWARDED, AdKind.AUDIO)
 
         suspend fun safeLoadBitmap(url: String): android.graphics.Bitmap? =
             withContext(Dispatchers.IO) {
