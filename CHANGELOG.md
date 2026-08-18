@@ -4,6 +4,14 @@ All notable changes to the AdPluga Android SDK are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.4.1] — 2026-08
+
+### Fixed
+- Native assets are now mapped from the flat serve fields
+  (`title`, `body`, `cta_text`, `sponsored_by`, `icon_url`,
+  `main_image_url`); the legacy nested `native` object is only a fallback.
+  Fixes `Ad.nativeAssets` always being null for native creatives.
+
 ## [0.4.0] — 2026-07
 
 ### Fixed
