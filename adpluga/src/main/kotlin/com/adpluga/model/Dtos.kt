@@ -22,6 +22,14 @@ internal data class AdDto(
     val type: String,
     @SerialName("asset_url") val assetUrl: String? = null,
     val html: String? = null,
+    val title: String? = null,
+    val body: String? = null,
+    @SerialName("cta_text") val ctaText: String? = null,
+    @SerialName("sponsored_by") val sponsoredBy: String? = null,
+    @SerialName("icon_url") val iconUrl: String? = null,
+    @SerialName("main_image_url") val mainImageUrl: String? = null,
+    // Deprecated: native assets arrive as flat fields above; kept as a
+    // defensive fallback for legacy responses.
     val native: Map<String, JsonElement>? = null,
     @SerialName("vast_url") val vastUrl: String? = null,
     @SerialName("audio_url") val audioUrl: String? = null,
@@ -41,7 +49,7 @@ internal data class AdDto(
         source = source,
         assetUrl = assetUrl ?: videoUrl ?: audioUrl ?: vastUrl,
         html = html,
-        nativeAssets = native?.mapValues { (_, v) -> v.asPrimitiveOrNull() },
+        nativeAssets = buildNativeAssets(),
         width = width,
         height = height,
         durationMs = durationMs,
@@ -51,6 +59,22 @@ internal data class AdDto(
         format = format,
         advertiserName = advertiserName,
     )
+
+    // buildNativeAssets prefers the flat contract fields and falls back to
+    // the legacy nested `native` object. Flat values win on key collision.
+    private fun buildNativeAssets(): Map<String, String?>? {
+        val nested = native?.mapValues { (_, v) -> v.asPrimitiveOrNull() } ?: emptyMap()
+        val flat = buildMap {
+            title?.let { put("title", it) }
+            body?.let { put("body", it) }
+            ctaText?.let { put("cta_text", it) }
+            sponsoredBy?.let { put("sponsored_by", it) }
+            iconUrl?.let { put("icon_url", it) }
+            mainImageUrl?.let { put("main_image_url", it) }
+        }
+        val merged = nested + flat
+        return merged.ifEmpty { null }
+    }
 }
 
 @Serializable
