@@ -3,7 +3,9 @@ package com.adpluga
 import com.adpluga.model.AdPlugaJson
 import com.adpluga.model.ServeResponseDto
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DtosTest {
@@ -62,5 +64,23 @@ class DtosTest {
         """.trimIndent()
         val model = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), json).toModel()
         assertNull(model.ad.nativeAssets)
+    }
+
+    @Test
+    fun `test flag is parsed from serve response`() {
+        val json = """
+            { "ad": { "id": "ad-t", "type": "image", "test": true }, "track_token": "tok", "source": "test" }
+        """.trimIndent()
+        val model = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), json).toModel()
+        assertTrue(model.ad.isTest)
+    }
+
+    @Test
+    fun `test flag defaults to false when absent`() {
+        val json = """
+            { "ad": { "id": "ad-t2", "type": "image" }, "track_token": "tok", "source": "house" }
+        """.trimIndent()
+        val model = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), json).toModel()
+        assertFalse(model.ad.isTest)
     }
 }

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.AttributeSet
+import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
@@ -24,6 +25,7 @@ public class HtmlAdView @JvmOverloads constructor(
     private val webView: WebView = WebView(context)
     private var initialLoaded: Boolean = false
     private var destroyed: Boolean = false
+    private var testBadge: View? = null
 
     public var onClick: (() -> Unit)? = null
 
@@ -96,6 +98,12 @@ public class HtmlAdView @JvmOverloads constructor(
                 webView.loadUrl(assetUrl)
             }
         }
+    }
+
+    @MainThread
+    public fun showTestBadge(show: Boolean) {
+        testBadge?.let { removeView(it) }
+        testBadge = if (show) addTestBadge(this) else null
     }
 
     override fun onDetachedFromWindow() {

@@ -39,6 +39,7 @@ public class VideoAdView @JvmOverloads constructor(
     private var videoWidth: Int = 0
     private var videoHeight: Int = 0
     private var pendingUrl: String? = null
+    private var testBadge: View? = null
 
     private val surfaceCallback = object : SurfaceHolder.Callback {
         override fun surfaceCreated(holder: SurfaceHolder) {
@@ -83,6 +84,12 @@ public class VideoAdView @JvmOverloads constructor(
         if (surfaceView.holder.surface?.isValid == true) {
             preparePlayer(url)
         }
+    }
+
+    @MainThread
+    public fun showTestBadge(show: Boolean) {
+        testBadge?.let { removeView(it) }
+        testBadge = if (show) addTestBadge(this) else null
     }
 
     private fun preparePlayer(url: String) {

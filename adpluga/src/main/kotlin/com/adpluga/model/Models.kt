@@ -47,6 +47,7 @@ public data class Ad(
     public val rewardCurrency: String,
     public val format: String?,
     public val advertiserName: String?,
+    public val isTest: Boolean = false,
 )
 
 public data class ServeResponse(

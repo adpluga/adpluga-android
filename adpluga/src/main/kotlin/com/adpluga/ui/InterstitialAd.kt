@@ -58,6 +58,7 @@ public class InterstitialAd internal constructor(
                 ).apply { gravity = Gravity.CENTER },
             )
             html.load(html = response.ad.html, assetUrl = response.ad.assetUrl)
+            html.showTestBadge(response.ad.isTest)
         } else if (response.ad.kind == AdKind.VIDEO) {
             val video = VideoAdView(activity).apply {
                 clickThroughUrl = response.clickUrl
@@ -75,6 +76,7 @@ public class InterstitialAd internal constructor(
                 videoUrl = response.ad.assetUrl,
                 quartilePings = response.quartilePings,
             )
+            video.showTestBadge(response.ad.isTest)
         } else {
             val image = ImageView(activity).apply {
                 scaleType = ImageView.ScaleType.FIT_CENTER
@@ -88,6 +90,7 @@ public class InterstitialAd internal constructor(
                     FrameLayout.LayoutParams.MATCH_PARENT,
                 ).apply { gravity = Gravity.CENTER },
             )
+            if (response.ad.isTest) addTestBadge(root)
             pluga.internalScope.launch {
                 val bmp = response.ad.assetUrl?.let { safeLoadBitmap(it) }
                 if (bmp != null) {

@@ -42,6 +42,7 @@ internal data class AdDto(
     @SerialName("reward_currency") val rewardCurrency: String = "USD",
     val format: String? = null,
     @SerialName("advertiser_name") val advertiserName: String? = null,
+    val test: Boolean = false,
 ) {
     fun toModel(source: AdSource): Ad = Ad(
         id = id,
@@ -58,6 +59,7 @@ internal data class AdDto(
         rewardCurrency = rewardCurrency,
         format = format,
         advertiserName = advertiserName,
+        isTest = test,
     )
 
     // buildNativeAssets prefers the flat contract fields and falls back to

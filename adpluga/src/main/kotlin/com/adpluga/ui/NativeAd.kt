@@ -1,6 +1,7 @@
 package com.adpluga.ui
 
 import android.view.View
+import android.widget.FrameLayout
 import com.adpluga.AdListener
 import com.adpluga.AdPluga
 import com.adpluga.errors.AdPlugaError
@@ -48,6 +49,9 @@ public class NativeAd internal constructor(
                 clickUrl = response.clickUrl,
                 trackToken = response.trackToken,
             )
+        }
+        if (ad.isTest && container is FrameLayout) {
+            addTestBadge(container)
         }
         return Handle(vh)
     }

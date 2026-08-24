@@ -118,6 +118,7 @@ public class RewardedAd internal constructor(
                     FrameLayout.LayoutParams.MATCH_PARENT,
                 ).apply { gravity = Gravity.CENTER },
             )
+            video.showTestBadge(response.ad.isTest)
             countdown.text = computeDurationSeconds(response).toString()
             dialog.setContentView(root)
             dialog.setCancelable(false)
@@ -158,6 +159,7 @@ public class RewardedAd internal constructor(
                 FrameLayout.LayoutParams.MATCH_PARENT,
             ).apply { gravity = Gravity.CENTER },
         )
+        if (response.ad.isTest) addTestBadge(root)
 
         val durationSeconds = computeDurationSeconds(response)
         var remaining = durationSeconds

@@ -44,6 +44,7 @@ public class AdView @JvmOverloads constructor(
     private var slotId: String? = null
     private var format: String? = null
     private var impressionFired: Boolean = false
+    private var testBadge: View? = null
 
     init {
         addView(
@@ -96,6 +97,7 @@ public class AdView @JvmOverloads constructor(
                             teardownVideo()
                             imageView.visibility = View.VISIBLE
                             if (bitmap != null) imageView.setImageBitmap(bitmap)
+                            setSelfTestBadge(response.ad.isTest)
                             listener?.onLoaded()
                             setOnClickListener { fireClick(pluga, response) }
                             tryAttachViewability(pluga, response)
@@ -133,6 +135,7 @@ public class AdView @JvmOverloads constructor(
                 teardownVideo()
                 imageView.visibility = View.VISIBLE
                 if (bitmap != null) imageView.setImageBitmap(bitmap)
+                setSelfTestBadge(response.ad.isTest)
                 setOnClickListener { fireClick(pluga, response) }
                 tryAttachViewability(pluga, response)
             }
@@ -156,6 +159,8 @@ public class AdView @JvmOverloads constructor(
         }
         view.onClick = { fireClick(pluga, response) }
         view.load(html = response.ad.html, assetUrl = response.ad.assetUrl)
+        setSelfTestBadge(false)
+        view.showTestBadge(response.ad.isTest)
         setOnClickListener(null)
         listener?.onLoaded()
         tryAttachViewability(pluga, response)
@@ -183,9 +188,16 @@ public class AdView @JvmOverloads constructor(
             videoUrl = response.ad.assetUrl,
             quartilePings = response.quartilePings,
         )
+        setSelfTestBadge(false)
+        view.showTestBadge(response.ad.isTest)
         setOnClickListener(null)
         listener?.onLoaded()
         tryAttachViewability(pluga, response)
+    }
+
+    private fun setSelfTestBadge(show: Boolean) {
+        testBadge?.let { removeView(it) }
+        testBadge = if (show) addTestBadge(this) else null
     }
 
     private fun teardownHtml() {
