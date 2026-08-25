@@ -38,6 +38,7 @@ public data class Ad(
     public val source: AdSource,
     public val assetUrl: String?,
     public val html: String?,
+    public val billingUrl: String?,
     public val nativeAssets: Map<String, String?>?,
     public val width: Int,
     public val height: Int,

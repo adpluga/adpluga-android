@@ -134,15 +134,24 @@ public class AdPluga private constructor(
         }
     }
 
-    public fun fireViewable(slotId: String, trackToken: String) {
+    public fun fireViewable(slotId: String, ad: Ad, trackToken: String) {
         if (destroyed.get()) return
         internalScope.launch {
             try {
-                transport.postTrack(
-                    path = "v1/track/viewable",
-                    token = trackToken,
-                    payload = mapOf("event" to "viewable", "slot" to slotId),
-                )
+                // Mediation fills carry no AdPluga track token: the billable
+                // impression is reported to the bidder by firing its burl once.
+                // First-party fills report the viewable to /track/viewable.
+                val billingUrl = ad.billingUrl
+                if (!billingUrl.isNullOrBlank()) {
+                    transport.beacon(billingUrl)
+                }
+                if (trackToken.isNotBlank()) {
+                    transport.postTrack(
+                        path = "v1/track/viewable",
+                        token = trackToken,
+                        payload = mapOf("event" to "viewable", "slot" to slotId),
+                    )
+                }
             } catch (t: Throwable) {
                 AdPlugaLogger.debug("viewable fire failed slot=$slotId", t)
             }

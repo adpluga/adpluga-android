@@ -114,6 +114,7 @@ public class InterstitialAd internal constructor(
             )
             pluga.fireViewable(
                 slotId = slotId,
+                ad = response.ad,
                 trackToken = response.trackToken,
             )
         }

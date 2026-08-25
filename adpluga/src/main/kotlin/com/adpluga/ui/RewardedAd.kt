@@ -132,6 +132,7 @@ public class RewardedAd internal constructor(
                 )
                 pluga.fireViewable(
                     slotId = slotId,
+                    ad = response.ad,
                     trackToken = response.trackToken,
                 )
                 video.load(
@@ -191,6 +192,7 @@ public class RewardedAd internal constructor(
             )
             pluga.fireViewable(
                 slotId = slotId,
+                ad = response.ad,
                 trackToken = response.trackToken,
             )
             handler.postDelayed(tickRunnable, 1_000L)
