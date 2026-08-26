@@ -162,7 +162,7 @@ class AdPlugaTest {
             publisherKey = "pk_test_abcdef123",
             endpoint = server.url("/").toString().trimEnd('/'),
         )
-        pluga.fireViewable(slotId = "slot_v", trackToken = "tok_xyz")
+        pluga.fireViewable(slotId = "slot_v", ad = sampleAd(), trackToken = "tok_xyz")
         val recorded = withTimeoutOrNull(2_000L) {
             var r = server.takeRequest()
             while (!r.path.orEmpty().contains("/v1/track/viewable")) {
@@ -176,6 +176,45 @@ class AdPlugaTest {
         assertTrue(body.contains("\"token\":\"tok_xyz\""))
         assertTrue(body.contains("\"event\":\"viewable\""))
     }
+
+    @Test
+    fun `fireViewable beacons billing url for mediation fills without token`() = runTest {
+        server.enqueue(MockResponse().setResponseCode(200))
+        val pluga = AdPluga.initialize(
+            publisherKey = "pk_test_abcdef123",
+            endpoint = server.url("/").toString().trimEnd('/'),
+        )
+        val billingUrl = server.url("/burl?imp=1").toString()
+        pluga.fireViewable(slotId = "slot_v", ad = sampleAd(billingUrl = billingUrl), trackToken = "")
+        val recorded = withTimeoutOrNull(2_000L) {
+            var r = server.takeRequest()
+            while (!r.path.orEmpty().contains("/burl")) {
+                r = server.takeRequest()
+            }
+            r
+        }
+        assertNotNull(recorded)
+        assertTrue(recorded!!.path.orEmpty().contains("imp=1"))
+    }
+
+    private fun sampleAd(billingUrl: String? = null): com.adpluga.model.Ad =
+        com.adpluga.model.Ad(
+            id = "ad_v",
+            kind = com.adpluga.model.AdKind.IMAGE,
+            source = com.adpluga.model.AdSource.HOUSE,
+            assetUrl = "https://cdn.adpluga.example/creatives/ad.png",
+            html = null,
+            billingUrl = billingUrl,
+            nativeAssets = null,
+            width = 300,
+            height = 250,
+            durationMs = 0,
+            skippableAfterMs = 0,
+            rewardAmount = 0,
+            rewardCurrency = "",
+            format = "banner_300x250",
+            advertiserName = null,
+        )
 
     private val displayFixture = """
         {
