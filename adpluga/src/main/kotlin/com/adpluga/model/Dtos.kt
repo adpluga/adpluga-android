@@ -17,6 +17,14 @@ internal val AdPlugaJson: Json = Json {
 }
 
 @Serializable
+internal data class SlideDto(
+    @SerialName("asset_url") val assetUrl: String = "",
+    val title: String? = null,
+    val body: String? = null,
+    @SerialName("cta_text") val ctaText: String? = null,
+)
+
+@Serializable
 internal data class AdDto(
     val id: String,
     val type: String,
@@ -43,6 +51,7 @@ internal data class AdDto(
     @SerialName("reward_currency") val rewardCurrency: String = "USD",
     val format: String? = null,
     @SerialName("advertiser_name") val advertiserName: String? = null,
+    val slides: List<SlideDto>? = null,
     val test: Boolean = false,
 ) {
     fun toModel(source: AdSource): Ad = Ad(
@@ -61,6 +70,9 @@ internal data class AdDto(
         rewardCurrency = rewardCurrency,
         format = format,
         advertiserName = advertiserName,
+        slides = slides.orEmpty()
+            .filter { it.assetUrl.isNotEmpty() }
+            .map { Slide(it.assetUrl, it.title, it.body, it.ctaText) },
         isTest = test,
     )
 

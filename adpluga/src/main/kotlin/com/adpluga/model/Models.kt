@@ -9,7 +9,8 @@ public enum class AdKind(public val wire: String) {
     TEMPLATE("template"),
     VIDEO("video"),
     VIDEO_REWARDED("video_rewarded"),
-    AUDIO("audio");
+    AUDIO("audio"),
+    CAROUSEL("carousel");
 
     public companion object {
         public fun fromWire(wire: String): AdKind =
@@ -32,6 +33,17 @@ public enum class AdSource(public val wire: String) {
     }
 }
 
+/**
+ * One card of a carousel. The whole deck shares the ad's click token and its
+ * single impression, so swiping never mints or spends anything extra.
+ */
+public data class Slide(
+    public val assetUrl: String,
+    public val title: String? = null,
+    public val body: String? = null,
+    public val ctaText: String? = null,
+)
+
 public data class Ad(
     public val id: String,
     public val kind: AdKind,
@@ -48,6 +60,7 @@ public data class Ad(
     public val rewardCurrency: String,
     public val format: String?,
     public val advertiserName: String?,
+    public val slides: List<Slide> = emptyList(),
     public val isTest: Boolean = false,
 )
 

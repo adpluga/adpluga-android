@@ -1,5 +1,6 @@
 package com.adpluga
 
+import com.adpluga.model.AdKind
 import com.adpluga.model.AdPlugaJson
 import com.adpluga.model.ServeResponseDto
 import org.junit.Assert.assertEquals
@@ -109,5 +110,49 @@ class DtosTest {
         """.trimIndent()
         val dto = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), json)
         assertEquals(0, dto.toModel().refreshAfterSeconds)
+    }
+
+    @Test
+    fun `carousel deck is parsed in order and slides without a creative are dropped`() {
+        val json = """
+            {
+              "ad": {
+                "id": "ad-2",
+                "type": "carousel",
+                "width": 300,
+                "height": 250,
+                "slides": [
+                  {"asset_url": "https://cdn/1.png", "title": "Card 1", "cta_text": "Ver"},
+                  {"asset_url": ""},
+                  {"asset_url": "https://cdn/2.png", "body": "Segundo"}
+                ]
+              },
+              "track_token": "tok",
+              "source": "pool"
+            }
+        """.trimIndent()
+
+        val ad = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), json).toModel().ad
+        assertEquals(AdKind.CAROUSEL, ad.kind)
+        assertEquals(2, ad.slides.size)
+        assertEquals("https://cdn/1.png", ad.slides[0].assetUrl)
+        assertEquals("Card 1", ad.slides[0].title)
+        assertEquals("Ver", ad.slides[0].ctaText)
+        assertEquals("https://cdn/2.png", ad.slides[1].assetUrl)
+        assertEquals("Segundo", ad.slides[1].body)
+    }
+
+    @Test
+    fun `every other creative type carries an empty deck`() {
+        val json = """
+            {
+              "ad": {"id": "ad-3", "type": "image", "asset_url": "https://cdn/b.png"},
+              "track_token": "tok",
+              "source": "pool"
+            }
+        """.trimIndent()
+
+        val ad = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), json).toModel().ad
+        assertTrue(ad.slides.isEmpty())
     }
 }

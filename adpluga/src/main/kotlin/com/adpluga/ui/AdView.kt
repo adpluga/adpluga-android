@@ -37,6 +37,7 @@ public class AdView @JvmOverloads constructor(
     }
     private var htmlView: HtmlAdView? = null
     private var videoView: VideoAdView? = null
+    private var carouselView: CarouselAdView? = null
 
     private var listener: AdListener? = null
     private var loadJob: Job? = null
@@ -48,6 +49,7 @@ public class AdView @JvmOverloads constructor(
     private var refreshSeq: Int = 0
     private var refreshRunnable: Runnable? = null
     private var testBadge: View? = null
+    private var lastDeckSwipeAt: Long = 0L
 
     init {
         addView(
@@ -100,6 +102,14 @@ public class AdView @JvmOverloads constructor(
                     AdKind.VIDEO, AdKind.VIDEO_REWARDED, AdKind.AUDIO -> withContext(Dispatchers.Main) {
                         renderVideo(pluga, response)
                     }
+                    AdKind.CAROUSEL -> {
+                        val bitmaps = response.ad.slides.map { safeLoadBitmap(it.assetUrl) }
+                        withContext(Dispatchers.Main) {
+                            renderCarousel(pluga, response, bitmaps)
+                            listener?.onLoaded()
+                            scheduleRefresh(response)
+                        }
+                    }
                     else -> {
                         val bitmap = response.ad.assetUrl?.let { safeLoadBitmap(it) }
                         withContext(Dispatchers.Main) {
@@ -107,6 +117,7 @@ public class AdView @JvmOverloads constructor(
                             impressionFired = false
                             teardownHtml()
                             teardownVideo()
+                            teardownCarousel()
                             imageView.visibility = View.VISIBLE
                             if (bitmap != null) imageView.setImageBitmap(bitmap)
                             setSelfTestBadge(response.ad.isTest)
@@ -141,11 +152,19 @@ public class AdView @JvmOverloads constructor(
             renderVideo(pluga, response)
             return
         }
+        if (response.ad.kind == AdKind.CAROUSEL) {
+            pluga.internalScope.launch {
+                val bitmaps = response.ad.slides.map { safeLoadBitmap(it.assetUrl) }
+                withContext(Dispatchers.Main) { renderCarousel(pluga, response, bitmaps) }
+            }
+            return
+        }
         pluga.internalScope.launch {
             val bitmap = response.ad.assetUrl?.let { safeLoadBitmap(it) }
             withContext(Dispatchers.Main) {
                 teardownHtml()
                 teardownVideo()
+                teardownCarousel()
                 imageView.visibility = View.VISIBLE
                 if (bitmap != null) imageView.setImageBitmap(bitmap)
                 setSelfTestBadge(response.ad.isTest)
@@ -156,11 +175,46 @@ public class AdView @JvmOverloads constructor(
     }
 
     @MainThread
+    private fun renderCarousel(
+        pluga: AdPluga,
+        response: ServeResponse,
+        bitmaps: List<android.graphics.Bitmap?>,
+    ) {
+        boundResponse = response
+        impressionFired = false
+        imageView.visibility = View.GONE
+        teardownHtml()
+        teardownVideo()
+        teardownCarousel()
+        setOnClickListener(null)
+        isClickable = false
+        val deck = CarouselAdView(
+            context,
+            response.ad.slides,
+            onClick = { fireClick(pluga, response) },
+            onSwipe = { lastDeckSwipeAt = System.currentTimeMillis() },
+        )
+        carouselView = deck
+        addView(deck, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+        deck.bind(bitmaps)
+        setSelfTestBadge(response.ad.isTest)
+        tryAttachViewability(pluga, response)
+    }
+
+    @MainThread
+    private fun teardownCarousel() {
+        carouselView?.let { removeView(it) }
+        carouselView = null
+        lastDeckSwipeAt = 0L
+    }
+
+    @MainThread
     private fun renderHtml(pluga: AdPluga, response: ServeResponse) {
         boundResponse = response
         impressionFired = false
         imageView.visibility = View.GONE
         teardownVideo()
+        teardownCarousel()
         val view = htmlView ?: HtmlAdView(context).also { child ->
             addView(
                 child,
@@ -186,6 +240,7 @@ public class AdView @JvmOverloads constructor(
         impressionFired = false
         imageView.visibility = View.GONE
         teardownHtml()
+        teardownCarousel()
         val view = videoView ?: VideoAdView(context).also { child ->
             addView(
                 child,
@@ -246,6 +301,7 @@ public class AdView @JvmOverloads constructor(
         cancelInternal()
         teardownHtml()
         teardownVideo()
+        teardownCarousel()
         super.onDetachedFromWindow()
     }
 
@@ -326,12 +382,30 @@ public class AdView @JvmOverloads constructor(
             scheduleRefresh(response)
             return
         }
+        // A deck the reader is still swiping through keeps the slot; rotation
+        // resumes one full cadence after the last swipe.
+        val secs = response.refreshAfterSeconds
+        if (lastDeckSwipeAt > 0L &&
+            secs > 0 &&
+            System.currentTimeMillis() - lastDeckSwipeAt < secs * 1_000L
+        ) {
+            scheduleRefresh(response)
+            return
+        }
         refreshSeq += 1
         reload()
     }
 
     private companion object {
-        val RENDERABLE_KINDS = setOf(AdKind.IMAGE, AdKind.TEMPLATE, AdKind.HTML, AdKind.VIDEO, AdKind.VIDEO_REWARDED, AdKind.AUDIO)
+        val RENDERABLE_KINDS = setOf(
+            AdKind.IMAGE,
+            AdKind.TEMPLATE,
+            AdKind.HTML,
+            AdKind.VIDEO,
+            AdKind.VIDEO_REWARDED,
+            AdKind.AUDIO,
+            AdKind.CAROUSEL,
+        )
 
         suspend fun safeLoadBitmap(url: String): android.graphics.Bitmap? =
             withContext(Dispatchers.IO) {
