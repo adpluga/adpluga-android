@@ -7,6 +7,13 @@ internal object Constants {
     const val SDK_VERSION: String = BuildConfig.SDK_VERSION
     const val DEFAULT_ENDPOINT: String = "https://edge.adpluga.com"
 
+    /**
+     * Rotation cadences below this floor are ignored even when the server
+     * sends one: it matches the 30s minimum the mobile ad industry enforces
+     * and keeps a misconfigured slot from burning the publisher's quota.
+     */
+    const val MIN_REFRESH_SECONDS: Int = 30
+
     const val VIEWABILITY_THRESHOLD: Double = 0.5
     const val VIEWABILITY_DURATION_MS: Long = 1_000L
     const val VIEWABILITY_TICK_MS: Long = 200L

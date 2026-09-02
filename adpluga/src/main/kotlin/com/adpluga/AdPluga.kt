@@ -90,12 +90,17 @@ public class AdPluga private constructor(
         emit(SdkEvent.InitCompleted())
     }
 
-    public suspend fun serve(slotId: String, format: String? = null, userHash: String? = null): ServeResponse? {
+    public suspend fun serve(
+        slotId: String,
+        format: String? = null,
+        userHash: String? = null,
+        refreshSeq: Int = 0,
+    ): ServeResponse? {
         if (destroyed.get()) throw AdPlugaError.NotInitialized
         if (upgradeBlocked.get()) return null
         val started = System.currentTimeMillis()
         return try {
-            val response = transport.serve(slotId, format, userHash)
+            val response = transport.serve(slotId, format, userHash, refreshSeq)
             val latency = (System.currentTimeMillis() - started).toInt()
             telemetry.record(SdkEventType.ServeRequest, latency)
             if (response != null) {

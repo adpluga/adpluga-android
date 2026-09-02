@@ -10,6 +10,7 @@ import android.widget.ImageView
 import androidx.annotation.MainThread
 import com.adpluga.AdListener
 import com.adpluga.AdPluga
+import com.adpluga.config.Constants
 import com.adpluga.errors.AdPlugaError
 import com.adpluga.logger.AdPlugaLogger
 import com.adpluga.model.Ad
@@ -44,6 +45,8 @@ public class AdView @JvmOverloads constructor(
     private var slotId: String? = null
     private var format: String? = null
     private var impressionFired: Boolean = false
+    private var refreshSeq: Int = 0
+    private var refreshRunnable: Runnable? = null
     private var testBadge: View? = null
 
     init {
@@ -61,6 +64,15 @@ public class AdView @JvmOverloads constructor(
         this.slotId = slotId
         this.format = format
         this.listener = listener
+        refreshSeq = 0
+        reload()
+    }
+
+    /** Re-runs the current slot request, carrying the rotation index. */
+    private fun reload() {
+        val slotId = this.slotId ?: return
+        val format = this.format
+        val listener = this.listener
         val pluga = AdPluga.maybeInstance
         if (pluga == null) {
             listener?.onError(AdPlugaError.NotInitialized)
@@ -68,7 +80,7 @@ public class AdView @JvmOverloads constructor(
         }
         loadJob = pluga.internalScope.launch {
             try {
-                val response = pluga.serve(slotId, format)
+                val response = pluga.serve(slotId, format, refreshSeq = refreshSeq)
                 if (response == null) {
                     withContext(Dispatchers.Main) {
                         listener?.onError(AdPlugaError.Network(0, "no fill"))
@@ -101,6 +113,7 @@ public class AdView @JvmOverloads constructor(
                             listener?.onLoaded()
                             setOnClickListener { fireClick(pluga, response) }
                             tryAttachViewability(pluga, response)
+                            scheduleRefresh(response)
                         }
                     }
                 }
@@ -164,6 +177,7 @@ public class AdView @JvmOverloads constructor(
         setOnClickListener(null)
         listener?.onLoaded()
         tryAttachViewability(pluga, response)
+        scheduleRefresh(response)
     }
 
     @MainThread
@@ -193,6 +207,7 @@ public class AdView @JvmOverloads constructor(
         setOnClickListener(null)
         listener?.onLoaded()
         tryAttachViewability(pluga, response)
+        scheduleRefresh(response)
     }
 
     private fun setSelfTestBadge(show: Boolean) {
@@ -265,12 +280,49 @@ public class AdView @JvmOverloads constructor(
     }
 
     private fun cancelInternal() {
+        cancelRefresh()
         loadJob?.cancel()
         loadJob = null
         if (viewabilityHandle != 0) {
             ViewabilityTracker.unregister(viewabilityHandle)
             viewabilityHandle = 0
         }
+    }
+
+    /**
+     * Arms the next rotation for the cadence the server published for this
+     * slot. Nothing is scheduled when the slot has no cadence or the value is
+     * below the industry floor.
+     */
+    @MainThread
+    private fun scheduleRefresh(response: ServeResponse) {
+        cancelRefresh()
+        val secs = response.refreshAfterSeconds
+        if (secs < Constants.MIN_REFRESH_SECONDS) return
+        val task = Runnable { onRefreshTick() }
+        refreshRunnable = task
+        postDelayed(task, secs * 1_000L)
+    }
+
+    @MainThread
+    private fun cancelRefresh() {
+        refreshRunnable?.let { removeCallbacks(it) }
+        refreshRunnable = null
+    }
+
+    @MainThread
+    private fun onRefreshTick() {
+        refreshRunnable = null
+        val response = boundResponse ?: return
+        // Rotating an off-screen ad would spend a decision on an impression the
+        // MRC guidelines classify as non-viewable: wait for it to come back
+        // into view instead, re-arming on the same cadence.
+        if (!ViewabilityTracker.isVisible(this)) {
+            scheduleRefresh(response)
+            return
+        }
+        refreshSeq += 1
+        reload()
     }
 
     private companion object {

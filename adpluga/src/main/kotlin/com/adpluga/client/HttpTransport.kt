@@ -44,13 +44,14 @@ internal class HttpTransport(
     private val client: OkHttpClient = clientProvider()
     private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
 
-    suspend fun serve(slotId: String, format: String?, userHash: String?): ServeResponse? =
+    suspend fun serve(slotId: String, format: String?, userHash: String?, refreshSeq: Int = 0): ServeResponse? =
         withContext(Dispatchers.IO) {
             val url = endpoint.toHttpUrl().newBuilder().apply {
                 addPathSegments("v1/serve")
                 addQueryParameter("slot", slotId)
                 if (!format.isNullOrBlank()) addQueryParameter("format", format)
                 if (!userHash.isNullOrBlank()) addQueryParameter("user_hash", userHash)
+                if (refreshSeq > 0) addQueryParameter("rq", refreshSeq.toString())
                 if (!consent.state.isPersonalized) addQueryParameter("non_personalized", "true")
             }.build()
             val request = buildGet(url.toString(), Constants.NETWORK_SERVE_TIMEOUT_MS)

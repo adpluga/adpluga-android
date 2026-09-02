@@ -91,6 +91,7 @@ internal data class ServeResponseDto(
     @SerialName("conversion_token") val conversionToken: String? = null,
     val source: String,
     @SerialName("quartile_pings") val quartilePings: Map<String, String>? = null,
+    @SerialName("refresh_after_seconds") val refreshAfterSeconds: Int = 0,
 ) {
     fun toModel(): ServeResponse {
         val src = AdSource.fromWire(source)
@@ -101,6 +102,7 @@ internal data class ServeResponseDto(
             conversionUrl = conversionUrl,
             trackToken = trackToken,
             conversionToken = conversionToken,
+            refreshAfterSeconds = refreshAfterSeconds,
             quartilePings = quartilePings,
         )
     }

@@ -4,6 +4,20 @@ All notable changes to the AdPluga Android SDK are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] — 2026-09
+
+### Added
+- Slot rotation: `AdView` now re-serves on the cadence the publisher configures
+  for the slot (`refresh_after_seconds` on the serve response), so a long-lived
+  screen no longer shows a single frozen creative.
+- Rotation is gated so it cannot waste the publisher's budget or produce
+  non-viewable impressions: it only fires while the view meets the IAB pixel
+  threshold (`ViewabilityTracker.isVisible`), is floored at 30s
+  (`Constants.MIN_REFRESH_SECONDS`), and the pending callback is removed on
+  detach and on every reload.
+- Each rotation sends its index (`rq`) so refreshed impressions stay segregable
+  from the initial render, as the MRC guidelines require.
+
 ## [0.4.2] — 2026-08
 
 ### Added

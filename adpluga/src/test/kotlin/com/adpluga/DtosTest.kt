@@ -83,4 +83,31 @@ class DtosTest {
         val model = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), json).toModel()
         assertFalse(model.ad.isTest)
     }
+
+    @Test
+    fun `rotation cadence is parsed from the serve response`() {
+        val json = """
+            {
+              "ad": { "id": "ad-1", "type": "image" },
+              "track_token": "tok",
+              "source": "house",
+              "refresh_after_seconds": 60
+            }
+        """.trimIndent()
+        val dto = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), json)
+        assertEquals(60, dto.toModel().refreshAfterSeconds)
+    }
+
+    @Test
+    fun `slot without a cadence never rotates`() {
+        val json = """
+            {
+              "ad": { "id": "ad-1", "type": "image" },
+              "track_token": "tok",
+              "source": "house"
+            }
+        """.trimIndent()
+        val dto = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), json)
+        assertEquals(0, dto.toModel().refreshAfterSeconds)
+    }
 }

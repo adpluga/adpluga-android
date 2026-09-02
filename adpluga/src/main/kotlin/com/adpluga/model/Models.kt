@@ -59,4 +59,9 @@ public data class ServeResponse(
     public val trackToken: String,
     public val conversionToken: String?,
     public val quartilePings: Map<String, String>?,
+    /**
+     * Publisher-configured rotation cadence for this slot, in seconds.
+     * 0 means the slot must not rotate.
+     */
+    public val refreshAfterSeconds: Int = 0,
 )

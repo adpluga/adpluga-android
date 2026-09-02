@@ -83,6 +83,17 @@ internal object ViewabilityTracker {
         return Result.Continue
     }
 
+    /**
+     * Whether the view currently meets the IAB pixel threshold. Used by the
+     * refresh scheduler so a rotation never happens off-screen (MRC counts
+     * out-of-view auto-refresh as non-viewable).
+     */
+    fun isVisible(view: View): Boolean {
+        if (!view.isShown || !view.isAttachedToWindow) return false
+        if (view.width == 0 || view.height == 0) return false
+        return computeVisibleRatio(view) >= Constants.VIEWABILITY_THRESHOLD
+    }
+
     private fun computeVisibleRatio(view: View): Double {
         val rect = Rect()
         val visible = view.getGlobalVisibleRect(rect)
