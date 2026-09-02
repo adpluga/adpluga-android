@@ -107,11 +107,22 @@ internal class HttpTransport(
         }
     }
 
+    /**
+     * Fires a one-shot tracking GET. The serve contract may hand back a
+     * path-only URL, which OkHttp rejects outright, so it is resolved against
+     * the configured endpoint before dialling.
+     */
+    private fun absolute(url: String): String {
+        if (url.startsWith("http://") || url.startsWith("https://")) return url
+        val separator = if (url.startsWith("/")) "" else "/"
+        return "${endpoint.trimEnd('/')}$separator$url"
+    }
+
     suspend fun beacon(url: String) {
         withContext(Dispatchers.IO) {
             try {
                 val request = Request.Builder()
-                    .url(url)
+                    .url(absolute(url))
                     .get()
                     .header(Constants.KEY_HEADER, publisherKey)
                     .header(Constants.PLATFORM_HEADER, Constants.SDK_PLATFORM)

@@ -246,6 +246,57 @@ class AdPlugaTest {
             advertiserName = null,
         )
 
+    @Test
+    fun `a path-only impression url is dialled against the endpoint`() = runTest {
+        server.enqueue(MockResponse().setResponseCode(200).setBody(relativeTrackingFixture))
+        server.enqueue(MockResponse().setResponseCode(200))
+        server.enqueue(MockResponse().setResponseCode(302))
+        val pluga = AdPluga.initialize(
+            publisherKey = "pk_test_abcdef123",
+            endpoint = server.url("/").toString().trimEnd('/'),
+        )
+        val response = pluga.serve(slotId = "slot_1")
+        assertNotNull(response)
+        server.takeRequest()
+
+        pluga.fireImpression(
+            slotId = "slot_1",
+            ad = response!!.ad,
+            impressionUrl = response.impressionUrl,
+            trackToken = response.trackToken,
+        )
+        pluga.fireClick(
+            slotId = "slot_1",
+            ad = response.ad,
+            clickUrl = response.clickUrl,
+            trackToken = response.trackToken,
+        )
+
+        val paths = setOf(server.takeRequest().path, server.takeRequest().path)
+        assertTrue("impression beacon never left the device: $paths", paths.contains("/v1/imp?t=abc"))
+        assertTrue("click beacon never left the device: $paths", paths.contains("/v1/click?t=xyz"))
+    }
+
+    // Mirrors what /v1/serve actually emits: path-only tracking URLs. OkHttp
+    // rejects a relative URL outright, so this fixture is what guards the
+    // impression and click from being dropped before they leave the device.
+    private val relativeTrackingFixture = """
+        {
+          "ad": {
+            "id": "ad_rel_1",
+            "type": "image",
+            "asset_url": "https://cdn.adpluga.example/creatives/ad.png",
+            "click_url": "https://landing.example",
+            "width": 320,
+            "height": 100
+          },
+          "impression_url": "/v1/imp?t=abc",
+          "click_url": "/v1/click?t=xyz",
+          "track_token": "eyJhbGciOi",
+          "source": "pool"
+        }
+    """.trimIndent()
+
     private val displayFixture = """
         {
           "ad": {
