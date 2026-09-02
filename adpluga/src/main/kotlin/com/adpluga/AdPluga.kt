@@ -25,7 +25,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import okhttp3.OkHttpClient
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 public class AdPluga private constructor(
     public val publisherKey: String,
@@ -69,6 +71,22 @@ public class AdPluga private constructor(
 
     public val consent: ConsentState get() = consentStore.state
 
+    private val installId = AtomicReference<String?>(null)
+
+    /**
+     * First-party install id used for frequency capping and first-party
+     * audiences. Only released when the current consent state allows
+     * personalisation; without it the request carries no user at all and the
+     * server skips both gates. Held in memory for the process lifetime — pass
+     * `userHash` explicitly to key the daily cap across app launches.
+     */
+    private fun resolvedUserId(): String? {
+        if (!consentStore.state.isPersonalized) return null
+        installId.get()?.let { return it }
+        val generated = UUID.randomUUID().toString().replace("-", "")
+        return if (installId.compareAndSet(null, generated)) generated else installId.get()
+    }
+
     public val featuresView: FeaturesView get() = features.view
 
     private fun start() {
@@ -100,7 +118,7 @@ public class AdPluga private constructor(
         if (upgradeBlocked.get()) return null
         val started = System.currentTimeMillis()
         return try {
-            val response = transport.serve(slotId, format, userHash, refreshSeq)
+            val response = transport.serve(slotId, format, userHash ?: resolvedUserId(), refreshSeq)
             val latency = (System.currentTimeMillis() - started).toInt()
             telemetry.record(SdkEventType.ServeRequest, latency)
             if (response != null) {

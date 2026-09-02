@@ -4,6 +4,17 @@ All notable changes to the AdPluga Android SDK are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.5.1] — 2026-09
+
+### Fixed
+- Frequency capping and first-party audiences now work on mobile. The SDK
+  releases a first-party install id as `u` (the parameter the server actually
+  reads) whenever the consent state allows personalisation; without consent no
+  id leaves the device and the server skips both gates, as before.
+- The query parameter was `user_hash`, which the server never reads; it is now
+  `u`. The id lives in memory for the process lifetime; pass `userHash`
+  explicitly to key the daily cap across app launches.
+
 ## [0.5.0] — 2026-09
 
 ### Added

@@ -50,7 +50,7 @@ internal class HttpTransport(
                 addPathSegments("v1/serve")
                 addQueryParameter("slot", slotId)
                 if (!format.isNullOrBlank()) addQueryParameter("format", format)
-                if (!userHash.isNullOrBlank()) addQueryParameter("user_hash", userHash)
+                if (!userHash.isNullOrBlank()) addQueryParameter("u", userHash)
                 if (refreshSeq > 0) addQueryParameter("rq", refreshSeq.toString())
                 if (!consent.state.isPersonalized) addQueryParameter("non_personalized", "true")
             }.build()

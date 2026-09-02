@@ -15,6 +15,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -60,6 +61,35 @@ class AdPlugaTest {
         val recorded = server.takeRequest()
         assertEquals("pk_test_abcdef123", recorded.getHeader("X-AdPluga-Key"))
         assertEquals("android", recorded.getHeader("X-Adpluga-Sdk-Platform"))
+    }
+
+    @Test
+    fun `serve sends the install id as u when personalised`() = runTest {
+        server.enqueue(MockResponse().setResponseCode(200).setBody(displayFixture))
+        val pluga = AdPluga.initialize(
+            publisherKey = "pk_test_abcdef123",
+            endpoint = server.url("/").toString().trimEnd('/'),
+        )
+        pluga.serve(slotId = "slot_1")
+        val recorded = server.takeRequest()
+        val query = recorded.requestUrl?.query.orEmpty()
+        // The backend keys frequency capping and first-party audiences on `u`;
+        // `user_hash` was silently ignored, leaving both gates dead on mobile.
+        assertTrue("serve must carry the user id as u: $query", query.contains("u="))
+        assertFalse("user_hash is not read by the server: $query", query.contains("user_hash="))
+    }
+
+    @Test
+    fun `serve omits the install id without personalisation consent`() = runTest {
+        server.enqueue(MockResponse().setResponseCode(200).setBody(displayFixture))
+        val pluga = AdPluga.initialize(
+            publisherKey = "pk_test_abcdef123",
+            endpoint = server.url("/").toString().trimEnd('/'),
+            consent = ConsentState(gdpr = true, adPersonalization = false),
+        )
+        pluga.serve(slotId = "slot_1")
+        val query = server.takeRequest().requestUrl?.query.orEmpty()
+        assertFalse("no user id may leave the device without consent: $query", query.contains("u="))
     }
 
     @Test
