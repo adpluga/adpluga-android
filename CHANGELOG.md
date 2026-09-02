@@ -4,6 +4,22 @@ All notable changes to the AdPluga Android SDK are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] — 2026-09
+
+### Added
+- `type=carousel` decks render in a snapping horizontal track built on the
+  framework's own `HorizontalScrollView`, keeping the SDK dependency-free. Every
+  card reports the same click: one advertiser, one auction, one impression.
+- `Slide` model and `Ad.slides`, parsed in advertiser order; a slide without a
+  creative is dropped.
+
+### Changed
+- A scheduled rotation now backs off while the reader is swiping the deck and
+  resumes one full cadence after the last swipe.
+- A slot cadence below the client floor is raised to it instead of being
+  ignored, so a slot set to 15s rotates every 15s on a `pk_test_` key and every
+  30s on a live one.
+
 ## [0.5.1] — 2026-09
 
 ### Fixed
