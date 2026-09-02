@@ -8,11 +8,13 @@ internal object Constants {
     const val DEFAULT_ENDPOINT: String = "https://edge.adpluga.com"
 
     /**
-     * Rotation cadences below this floor are ignored even when the server
-     * sends one: it matches the 30s minimum the mobile ad industry enforces
-     * and keeps a misconfigured slot from burning the publisher's quota.
+     * A cadence below the floor is raised to it, never dropped, so a slot
+     * always keeps rotating. Live traffic honours the 30s minimum the mobile
+     * ad industry enforces; sandbox creatives may rotate every 15s so an
+     * integrator can watch it work without waiting.
      */
     const val MIN_REFRESH_SECONDS: Int = 30
+    const val MIN_REFRESH_SECONDS_TEST: Int = 15
 
     const val VIEWABILITY_THRESHOLD: Double = 0.5
     const val VIEWABILITY_DURATION_MS: Long = 1_000L

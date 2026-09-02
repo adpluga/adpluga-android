@@ -298,10 +298,15 @@ public class AdView @JvmOverloads constructor(
     private fun scheduleRefresh(response: ServeResponse) {
         cancelRefresh()
         val secs = response.refreshAfterSeconds
-        if (secs < Constants.MIN_REFRESH_SECONDS) return
+        if (secs <= 0) return
+        val floor = if (response.ad.isTest) {
+            Constants.MIN_REFRESH_SECONDS_TEST
+        } else {
+            Constants.MIN_REFRESH_SECONDS
+        }
         val task = Runnable { onRefreshTick() }
         refreshRunnable = task
-        postDelayed(task, secs * 1_000L)
+        postDelayed(task, maxOf(secs, floor) * 1_000L)
     }
 
     @MainThread
