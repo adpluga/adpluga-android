@@ -272,6 +272,13 @@ public class AdPluga private constructor(
         public val instance: AdPluga
             get() = instanceRef ?: throw AdPlugaError.NotInitialized
 
+        /**
+         * The endpoint used when none is passed. Exposed so a host that reads
+         * the endpoint from its own configuration can fall back to it without
+         * hardcoding an AdPluga hostname.
+         */
+        public const val DEFAULT_ENDPOINT: String = Constants.DEFAULT_ENDPOINT
+
         @JvmStatic
         @JvmOverloads
         public fun initialize(
@@ -282,9 +289,16 @@ public class AdPluga private constructor(
             onUpgradeRequired: ((String) -> Unit)? = null,
             clientProvider: () -> OkHttpClient = { defaultClient() },
         ): AdPluga {
-            instanceRef?.let { return it }
             synchronized(lock) {
-                instanceRef?.let { return it }
+                instanceRef?.let { existing ->
+                    // Rotating a key revokes the previous one at once, so
+                    // silently keeping the old instance would leave the app
+                    // serving with a dead key and nothing to signal it.
+                    if (existing.publisherKey != publisherKey) {
+                        throw AdPlugaError.AlreadyInitialized(existing.publisherKey, publisherKey)
+                    }
+                    return existing
+                }
                 if (!Constants.KEY_PATTERN.matches(publisherKey)) {
                     throw AdPlugaError.InvalidKey(publisherKey)
                 }

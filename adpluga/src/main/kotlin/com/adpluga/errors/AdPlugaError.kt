@@ -5,6 +5,20 @@ public sealed class AdPlugaError(
     cause: Throwable? = null,
 ) : RuntimeException(message, cause) {
 
+    /**
+     * Raised when [AdPluga.initialize] is called with a different publisher key
+     * than the live instance holds. Rotating a key revokes the previous one
+     * immediately, so returning the old instance would leave the app serving
+     * with a revoked key. Call `destroy()` first to re-initialize deliberately.
+     */
+    public class AlreadyInitialized(
+        public val activeKey: String,
+        public val requestedKey: String,
+    ) : AdPlugaError(
+        "AdPluga is already initialized with a different publisher key; " +
+            "call destroy() before initializing again",
+    )
+
     public object NotInitialized : AdPlugaError("AdPluga.initialize must be called before use") {
         private fun readResolve(): Any = NotInitialized
     }

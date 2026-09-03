@@ -16,6 +16,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -275,6 +276,36 @@ class AdPlugaTest {
         val paths = setOf(server.takeRequest().path, server.takeRequest().path)
         assertTrue("impression beacon never left the device: $paths", paths.contains("/v1/imp?t=abc"))
         assertTrue("click beacon never left the device: $paths", paths.contains("/v1/click?t=xyz"))
+    }
+
+    @Test
+    fun `re-initializing with a different key throws instead of no-op`() {
+        val pluga = AdPluga.initialize(
+            publisherKey = "pk_test_aaaaaaaa",
+            endpoint = server.url("/").toString().trimEnd('/'),
+        )
+        // Rotating a key revokes the previous one, so silently returning the
+        // old instance would leave the app serving with a dead key.
+        val err = assertThrows(AdPlugaError.AlreadyInitialized::class.java) {
+            AdPluga.initialize(
+                publisherKey = "pk_test_bbbbbbbb",
+                endpoint = server.url("/").toString().trimEnd('/'),
+            )
+        }
+        assertEquals("pk_test_aaaaaaaa", err.activeKey)
+        // Same key stays idempotent.
+        assertEquals(
+            pluga,
+            AdPluga.initialize(
+                publisherKey = "pk_test_aaaaaaaa",
+                endpoint = server.url("/").toString().trimEnd('/'),
+            ),
+        )
+    }
+
+    @Test
+    fun `the default endpoint is part of the public surface`() {
+        assertTrue(AdPluga.DEFAULT_ENDPOINT.startsWith("https://"))
     }
 
     // Mirrors what /v1/serve actually emits: path-only tracking URLs. OkHttp

@@ -4,6 +4,21 @@ All notable changes to the AdPluga Android SDK are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] — 2026-09
+
+### Fixed
+- Tapping an image creative now opens the advertiser destination. HTML and
+  video creatives always did; image ones reported the click and went nowhere,
+  so the advertiser paid for a tap that never arrived.
+- `initialize` with a **different** publisher key now fails instead of quietly
+  returning the existing instance. Rotating a key revokes the previous one at
+  once, so the silent path left an app serving with a dead key. The same key
+  stays idempotent; call `destroy()` first to re-initialize deliberately.
+
+### Added
+- `AdPluga.DEFAULT_ENDPOINT` is public, so a host reading the endpoint from
+  configuration no longer has to hardcode an AdPluga hostname.
+
 ## [0.6.0] — 2026-09
 
 ### Added

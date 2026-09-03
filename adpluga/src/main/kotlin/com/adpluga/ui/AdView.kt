@@ -1,7 +1,9 @@
 package com.adpluga.ui
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
@@ -333,6 +335,29 @@ public class AdView @JvmOverloads constructor(
             clickUrl = response.clickUrl,
             trackToken = response.trackToken,
         )
+        openClickThrough(response.clickUrl)
+    }
+
+    /**
+     * Sends the user to the advertiser. The signed click endpoint redirects to
+     * the destination, which is why the URL is never read from the creative.
+     * HTML and video creatives have always navigated; image ones reported the
+     * click and went nowhere, so the advertiser paid for a tap that never
+     * arrived.
+     */
+    private fun openClickThrough(url: String?) {
+        if (url.isNullOrBlank()) return
+        val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return
+        val scheme = uri.scheme?.lowercase()
+        if (scheme != "http" && scheme != "https") {
+            AdPlugaLogger.warn("click-through refused for scheme=$scheme")
+            return
+        }
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        runCatching { context.startActivity(intent) }
+            .onFailure { AdPlugaLogger.warn("click-through open failed", it) }
     }
 
     private fun cancelInternal() {
