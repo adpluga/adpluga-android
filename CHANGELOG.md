@@ -4,6 +4,17 @@ All notable changes to the AdPluga Android SDK are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.1] — 2026-09
+
+### Fixed
+- A slot that failed to fill stayed blank for the rest of the session. Only the
+  success path armed the next attempt, so a transient miss — or a widget that
+  mounted before the SDK was initialised — cost the publisher that slot until
+  the view was recreated. Every failure path now schedules another attempt,
+  backing off exponentially from the client's cadence floor up to five minutes.
+  Retry is independent of the slot's rotation cadence, which is off by default:
+  tying recovery to rotation is what made a single miss permanent.
+
 ## [0.7.0] — 2026-09
 
 ### Fixed

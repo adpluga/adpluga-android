@@ -68,7 +68,7 @@ mavenPublishing {
     publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 
-    coordinates("com.adpluga", "adpluga", "0.7.0")
+    coordinates("com.adpluga", "adpluga", "0.7.1")
 
     pom {
         name.set("AdPluga Android SDK")
