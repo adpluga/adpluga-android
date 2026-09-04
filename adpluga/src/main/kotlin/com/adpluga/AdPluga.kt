@@ -136,6 +136,12 @@ public class AdPluga private constructor(
         }
     }
 
+    /**
+     * True while running against a sandbox key. Used for the cadence floor
+     * before any response has arrived.
+     */
+    public val isTestKey: Boolean get() = publisherKey.startsWith("pk_test_")
+
     public fun fireImpression(slotId: String, ad: Ad, impressionUrl: String?, trackToken: String) {
         if (destroyed.get()) return
         internalScope.launch {

@@ -52,6 +52,7 @@ public class AdView @JvmOverloads constructor(
     private var refreshRunnable: Runnable? = null
     private var testBadge: View? = null
     private var lastDeckSwipeAt: Long = 0L
+    private var fillFailures: Int = 0
 
     init {
         addView(
@@ -69,6 +70,7 @@ public class AdView @JvmOverloads constructor(
         this.format = format
         this.listener = listener
         refreshSeq = 0
+        fillFailures = 0
         reload()
     }
 
@@ -88,15 +90,18 @@ public class AdView @JvmOverloads constructor(
                 if (response == null) {
                     withContext(Dispatchers.Main) {
                         listener?.onError(AdPlugaError.Network(0, "no fill"))
+                        scheduleRetry(pluga)
                     }
                     return@launch
                 }
                 if (response.ad.kind !in RENDERABLE_KINDS) {
                     withContext(Dispatchers.Main) {
                         listener?.onError(AdPlugaError.UnsupportedFormat(response.ad.kind.wire))
+                        scheduleRetry(pluga)
                     }
                     return@launch
                 }
+                fillFailures = 0
                 when (response.ad.kind) {
                     AdKind.HTML -> withContext(Dispatchers.Main) {
                         renderHtml(pluga, response)
@@ -134,7 +139,10 @@ public class AdView @JvmOverloads constructor(
                 throw ce
             } catch (t: Throwable) {
                 AdPlugaLogger.warn("AdView load failed slot=$slotId", t)
-                withContext(Dispatchers.Main) { listener?.onError(t) }
+                withContext(Dispatchers.Main) {
+                    listener?.onError(t)
+                    scheduleRetry(pluga)
+                }
             }
         }
     }
@@ -388,6 +396,31 @@ public class AdView @JvmOverloads constructor(
         val task = Runnable { onRefreshTick() }
         refreshRunnable = task
         postDelayed(task, maxOf(secs, floor) * 1_000L)
+    }
+
+    /**
+     * Arms another attempt after a failed fill, backing off exponentially from
+     * the client's cadence floor. Independent of the slot's rotation cadence:
+     * rotation is off by default, so a slot that relied on it would stay blank
+     * for the rest of the session after a single miss.
+     */
+    @MainThread
+    private fun scheduleRetry(pluga: AdPluga) {
+        cancelRefresh()
+        val base = if (pluga.isTestKey) {
+            Constants.MIN_REFRESH_SECONDS_TEST
+        } else {
+            Constants.MIN_REFRESH_SECONDS
+        }
+        val secs = minOf(
+            base shl minOf(fillFailures, 10),
+            Constants.FILL_RETRY_MAX_BACKOFF_SECONDS,
+        )
+        fillFailures += 1
+        AdPlugaLogger.warn("slot $slotId unfilled; retrying in ${secs}s")
+        val task = Runnable { reload() }
+        refreshRunnable = task
+        postDelayed(task, secs * 1_000L)
     }
 
     @MainThread

@@ -13,6 +13,14 @@ internal object Constants {
      * ad industry enforces; sandbox creatives may rotate every 15s so an
      * integrator can watch it work without waiting.
      */
+    /**
+     * A slot that fails to fill must keep trying, or one transient miss costs
+     * the publisher that slot for the whole session. Retry is deliberately
+     * independent of the rotation cadence: rotation is off by default, so a
+     * slot with no cadence would otherwise never recover.
+     */
+    const val FILL_RETRY_MAX_BACKOFF_SECONDS: Int = 300
+
     const val MIN_REFRESH_SECONDS: Int = 30
     const val MIN_REFRESH_SECONDS_TEST: Int = 15
 

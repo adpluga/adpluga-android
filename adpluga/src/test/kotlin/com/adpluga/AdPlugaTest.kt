@@ -308,6 +308,15 @@ class AdPlugaTest {
         assertTrue(AdPluga.DEFAULT_ENDPOINT.startsWith("https://"))
     }
 
+    @Test
+    fun `a sandbox key is recognised for the retry and cadence floor`() {
+        val pluga = AdPluga.initialize(
+            publisherKey = "pk_test_abcdef123",
+            endpoint = server.url("/").toString().trimEnd('/'),
+        )
+        assertTrue(pluga.isTestKey)
+    }
+
     // Mirrors what /v1/serve actually emits: path-only tracking URLs. OkHttp
     // rejects a relative URL outright, so this fixture is what guards the
     // impression and click from being dropped before they leave the device.
