@@ -155,4 +155,42 @@ class DtosTest {
         val ad = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), json).toModel().ad
         assertTrue(ad.slides.isEmpty())
     }
+
+    // An unlabelled ad image is a link with no accessible name, so the label
+    // has to survive the wire and fall back when the advertiser wrote nothing.
+    @Test
+    fun `alternative text is parsed and falls back to the title`() {
+        val withAlt = """
+            {
+              "ad": {
+                "id": "ad-1",
+                "type": "image",
+                "asset_url": "https://cdn.example/b.png",
+                "title": "Promo",
+                "alt_text": "Perfumes a 20 por cento"
+              },
+              "source": "direto",
+              "track_token": "t"
+            }
+        """.trimIndent()
+        val parsed = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), withAlt)
+            .toModel()
+        assertEquals("Perfumes a 20 por cento", parsed.ad.altText)
+
+        val withoutAlt = """
+            {
+              "ad": {
+                "id": "ad-2",
+                "type": "image",
+                "asset_url": "https://cdn.example/b.png",
+                "title": "Promo"
+              },
+              "source": "direto",
+              "track_token": "t"
+            }
+        """.trimIndent()
+        val bare = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), withoutAlt)
+            .toModel()
+        assertNull(bare.ad.altText)
+    }
 }

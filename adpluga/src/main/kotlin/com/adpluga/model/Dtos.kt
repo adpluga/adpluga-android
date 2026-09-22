@@ -32,6 +32,7 @@ internal data class AdDto(
     val html: String? = null,
     @SerialName("billing_url") val billingUrl: String? = null,
     val title: String? = null,
+    @SerialName("alt_text") val altText: String? = null,
     val body: String? = null,
     @SerialName("cta_text") val ctaText: String? = null,
     @SerialName("sponsored_by") val sponsoredBy: String? = null,
@@ -70,6 +71,7 @@ internal data class AdDto(
         rewardCurrency = rewardCurrency,
         format = format,
         advertiserName = advertiserName,
+        altText = altText,
         slides = slides.orEmpty()
             .filter { it.assetUrl.isNotEmpty() }
             .map { Slide(it.assetUrl, it.title, it.body, it.ctaText) },

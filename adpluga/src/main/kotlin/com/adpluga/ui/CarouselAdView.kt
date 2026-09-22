@@ -34,6 +34,7 @@ private const val SETTLE_DELAY_MS = 60L
 internal class CarouselAdView(
     context: Context,
     private val slides: List<Slide>,
+    private val fallbackLabel: String,
     private val onClick: () -> Unit,
     private val onSwipe: () -> Unit,
 ) : HorizontalScrollView(context) {
@@ -123,6 +124,7 @@ internal class CarouselAdView(
         val card = FrameLayout(context)
         val image = ImageView(context).apply {
             scaleType = ImageView.ScaleType.CENTER_CROP
+            contentDescription = slide.title?.takeIf { it.isNotBlank() } ?: fallbackLabel
             if (bitmap != null) setImageBitmap(bitmap)
         }
         card.addView(

@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.adpluga"
-version = "0.5.1"
+version = "0.7.2"
 
 android {
     namespace = "com.adpluga"
@@ -15,7 +15,7 @@ android {
     defaultConfig {
         minSdk = 24
         consumerProguardFiles("consumer-rules.pro")
-        buildConfigField("String", "SDK_VERSION", "\"0.5.1\"")
+        buildConfigField("String", "SDK_VERSION", "\"0.7.2\"")
         buildConfigField("String", "SDK_PLATFORM", "\"android\"")
     }
 

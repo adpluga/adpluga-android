@@ -4,6 +4,22 @@ All notable changes to the AdPluga Android SDK are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.2] — 2026-09
+
+### Added
+- `alt_text` on the served creative, announced in place of the image. An ad is
+  never decorative — it carries meaning and opens a destination — so rendering
+  it unlabelled left the tap target with no accessible name at all, failing
+  WCAG 2.2 SC 1.1.1 and SC 2.4.4 (both level A). Where the advertiser wrote no
+  alternative text the renderer falls back to the creative's title, and a
+  carousel card with no copy of its own inherits the ad's label.
+
+### Note
+- This release also carries the 0.7.0 and 0.7.1 work, which was written but
+  never published: the version manifest stayed on 0.5.1, so the release
+  workflow never tagged those versions. The changelog entries below were
+  already written for them.
+
 ## [0.7.1] — 2026-09
 
 ### Fixed

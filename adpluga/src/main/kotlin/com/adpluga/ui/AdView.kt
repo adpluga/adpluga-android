@@ -126,6 +126,7 @@ public class AdView @JvmOverloads constructor(
                             teardownVideo()
                             teardownCarousel()
                             imageView.visibility = View.VISIBLE
+                            imageView.contentDescription = adLabel(response.ad)
                             if (bitmap != null) imageView.setImageBitmap(bitmap)
                             setSelfTestBadge(response.ad.isTest)
                             listener?.onLoaded()
@@ -176,6 +177,7 @@ public class AdView @JvmOverloads constructor(
                 teardownVideo()
                 teardownCarousel()
                 imageView.visibility = View.VISIBLE
+                imageView.contentDescription = adLabel(response.ad)
                 if (bitmap != null) imageView.setImageBitmap(bitmap)
                 setSelfTestBadge(response.ad.isTest)
                 setOnClickListener { fireClick(pluga, response) }
@@ -201,6 +203,7 @@ public class AdView @JvmOverloads constructor(
         val deck = CarouselAdView(
             context,
             response.ad.slides,
+            fallbackLabel = adLabel(response.ad),
             onClick = { fireClick(pluga, response) },
             onSwipe = { lastDeckSwipeAt = System.currentTimeMillis() },
         )

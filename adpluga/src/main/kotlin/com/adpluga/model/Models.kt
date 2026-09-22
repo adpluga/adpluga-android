@@ -60,6 +60,13 @@ public data class Ad(
     public val rewardCurrency: String,
     public val format: String?,
     public val advertiserName: String?,
+
+    /**
+     * Announced by a screen reader in place of the creative. An ad is never
+     * decorative, so a view with nothing here falls back to the title rather
+     * than leaving the image unlabelled.
+     */
+    public val altText: String? = null,
     public val slides: List<Slide> = emptyList(),
     public val isTest: Boolean = false,
 )
