@@ -9,17 +9,26 @@ native, interstitial, rewarded, HTML5, and video formats.
 - **Zero Google Play Services dependency**
 - **License**: Proprietary — see [LICENSE](./LICENSE)
 
+## Why AdPluga
+
+- **100,000 ad decisions free every month.** No card, no expiry.
+- **No traffic minimum.** When there is no demand, a house ad fills the slot so it never renders empty.
+- **Test mode first.** A `pk_test_` key serves ads with no billing and no quota use; switch to `pk_live_` when you are ready.
+- **One integration, every demand source.** Direct deals, network demand and mediation behind the same slot.
+
+Create a free account at <https://adpluga.com/en/> and get your keys in the dashboard.
+
 ## Install
 
 ```kotlin
 dependencies {
-    implementation("com.adpluga:adpluga:0.2.0")
+    implementation("com.adpluga:adpluga:0.7.3")
 }
 ```
 
 ```groovy
 dependencies {
-    implementation 'com.adpluga:adpluga:0.2.0'
+    implementation 'com.adpluga:adpluga:0.7.3'
 }
 ```
 
@@ -27,7 +36,7 @@ dependencies {
 
 ```kotlin
 // Application.onCreate()
-AdPluga.initialize(context, "pk_live_...")
+AdPluga.initialize(context, "pk_test_...")
 
 // Layout XML
 <com.adpluga.ui.AdView
@@ -45,7 +54,7 @@ adView.load(object : AdListener {
 })
 ```
 
-Full API reference and integration guides: <https://app.adpluga.com/docs/sdk/android>.
+Integration guides and API reference: <https://adpluga.com/en/devs/sdks/> · quick start in two minutes: <https://adpluga.com/en/devs/quickstart/>.
 
 ## Support
 

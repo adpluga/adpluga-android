@@ -4,6 +4,17 @@ All notable changes to the AdPluga Android SDK are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.3] — 2026-09
+
+### Fixed
+- The published Maven coordinates now come from the same `version` the release
+  workflow tags. They had been a separate literal, and drifted: the build tagged
+  `sdk-android-v0.7.2` went to Maven Central as `0.7.1`, and `0.5.1` went out as
+  `0.6.0`. Central is immutable, so those two artifacts stay as they are — the
+  `0.7.1` on Central is the 0.7.2 build (its `SDK_VERSION` reports 0.7.2). The
+  runtime `SDK_VERSION` reads the same value, so all three can no longer
+  disagree.
+
 ## [0.7.2] — 2026-09
 
 ### Added
