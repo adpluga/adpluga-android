@@ -49,7 +49,7 @@ internal class HttpTransport(
             val url = endpoint.toHttpUrl().newBuilder().apply {
                 addPathSegments("v1/serve")
                 addQueryParameter("slot", slotId)
-                if (!format.isNullOrBlank()) addQueryParameter("format", format)
+                if (!format.isNullOrBlank()) addQueryParameter("fmt", format)
                 if (!userHash.isNullOrBlank()) addQueryParameter("u", userHash)
                 if (refreshSeq > 0) addQueryParameter("rq", refreshSeq.toString())
                 if (!consent.state.isPersonalized) addQueryParameter("non_personalized", "true")

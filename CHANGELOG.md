@@ -4,6 +4,14 @@ All notable changes to the AdPluga Android SDK are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.4] — 2026-09
+
+### Fixed
+- The size hint reached the server as `format=`, which it does not read; it
+  reads `fmt`. So `AdView.load(slotId, format)` never asked for a size, and a
+  slot with several accepted sizes could get any of them. It is sent as `fmt`
+  now. The hint is a size such as `320x100`.
+
 ## [0.7.3] — 2026-09
 
 ### Fixed

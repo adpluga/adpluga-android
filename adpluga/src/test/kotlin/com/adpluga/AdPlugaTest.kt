@@ -81,6 +81,21 @@ class AdPlugaTest {
     }
 
     @Test
+    fun `serve sends the size hint as fmt`() = runTest {
+        server.enqueue(MockResponse().setResponseCode(200).setBody(displayFixture))
+        val pluga = AdPluga.initialize(
+            publisherKey = "pk_test_abcdef123",
+            endpoint = server.url("/").toString().trimEnd('/'),
+        )
+        pluga.serve(slotId = "slot_1", format = "320x100")
+        val url = server.takeRequest().requestUrl!!
+        // The server reads the size hint from fmt only; format= was ignored,
+        // so no mobile request ever carried a size.
+        assertEquals("320x100", url.queryParameter("fmt"))
+        assertNull(url.queryParameter("format"))
+    }
+
+    @Test
     fun `serve omits the install id without personalisation consent`() = runTest {
         server.enqueue(MockResponse().setResponseCode(200).setBody(displayFixture))
         val pluga = AdPluga.initialize(
