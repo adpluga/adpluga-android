@@ -22,13 +22,13 @@ Create a free account at <https://adpluga.com/en/> and get your keys in the dash
 
 ```kotlin
 dependencies {
-    implementation("com.adpluga:adpluga:0.7.3")
+    implementation("com.adpluga:adpluga:0.7.4")
 }
 ```
 
 ```groovy
 dependencies {
-    implementation 'com.adpluga:adpluga:0.7.3'
+    implementation 'com.adpluga:adpluga:0.7.4'
 }
 ```
 
@@ -36,23 +36,30 @@ dependencies {
 
 ```kotlin
 // Application.onCreate()
-AdPluga.initialize(context, "pk_test_...")
+AdPluga.initialize(publisherKey = "pk_test_...")
+```
 
-// Layout XML
+```xml
+<!-- Layout -->
 <com.adpluga.ui.AdView
     android:id="@+id/ad_view"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    app:slotId="slot_home_320x100"
-    app:format="banner_320x100" />
-
-// Kotlin
-adView.load(object : AdListener {
-    override fun onImpression() {}
-    override fun onClick() {}
-    override fun onError(e: AdError) {}
-})
+    android:layout_height="wrap_content" />
 ```
+
+```kotlin
+// Activity or Fragment
+findViewById<AdView>(R.id.ad_view).load(
+    slotId = "your-slot-id",
+    listener = object : AdListener {
+        override fun onImpression() {}
+        override fun onClick() {}
+        override fun onError(error: Throwable) {}
+    },
+)
+```
+
+Imports: `com.adpluga.AdPluga`, `com.adpluga.AdListener`, `com.adpluga.ui.AdView`. Min SDK 24; the `INTERNET` permission comes with the library.
 
 Integration guides and API reference: <https://adpluga.com/en/devs/sdks/> · quick start in two minutes: <https://adpluga.com/en/devs/quickstart/>.
 
