@@ -13,6 +13,7 @@ import androidx.annotation.MainThread
 import com.adpluga.AdListener
 import com.adpluga.AdPluga
 import com.adpluga.config.Constants
+import com.adpluga.consent.AppContextHolder
 import com.adpluga.errors.AdPlugaError
 import com.adpluga.logger.AdPlugaLogger
 import com.adpluga.model.Ad
@@ -55,6 +56,7 @@ public class AdView @JvmOverloads constructor(
     private var fillFailures: Int = 0
 
     init {
+        AppContextHolder.remember(context)
         addView(
             imageView,
             LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {

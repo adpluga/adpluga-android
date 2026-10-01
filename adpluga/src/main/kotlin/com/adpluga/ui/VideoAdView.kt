@@ -15,6 +15,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.annotation.MainThread
 import com.adpluga.AdPluga
+import com.adpluga.consent.AppContextHolder
 import com.adpluga.logger.AdPlugaLogger
 import com.adpluga.tracking.QuartileFirer
 
@@ -59,6 +60,7 @@ public class VideoAdView @JvmOverloads constructor(
     }
 
     init {
+        AppContextHolder.remember(context)
         setBackgroundColor(0xFF000000.toInt())
         surfaceView.layoutParams = LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,

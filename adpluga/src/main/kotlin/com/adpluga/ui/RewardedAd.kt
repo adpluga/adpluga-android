@@ -14,6 +14,7 @@ import androidx.annotation.MainThread
 import com.adpluga.AdListener
 import com.adpluga.AdPluga
 import com.adpluga.RewardListener
+import com.adpluga.consent.AppContextHolder
 import com.adpluga.errors.AdPlugaError
 import com.adpluga.model.AdKind
 import com.adpluga.model.ServeResponse
@@ -34,6 +35,7 @@ public class RewardedAd internal constructor(
         listener: AdListener? = null,
         rewardListener: RewardListener,
     ) {
+        AppContextHolder.remember(activity)
         val pluga = AdPluga.maybeInstance
         if (pluga == null) {
             listener?.onError(AdPlugaError.NotInitialized)

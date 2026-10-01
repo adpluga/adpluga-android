@@ -14,6 +14,7 @@ import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.annotation.MainThread
 import com.adpluga.config.Constants
+import com.adpluga.consent.AppContextHolder
 import com.adpluga.logger.AdPlugaLogger
 
 public class HtmlAdView @JvmOverloads constructor(
@@ -30,6 +31,7 @@ public class HtmlAdView @JvmOverloads constructor(
     public var onClick: (() -> Unit)? = null
 
     init {
+        AppContextHolder.remember(context)
         setBackgroundColor(0x00000000)
         webView.layoutParams = LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,

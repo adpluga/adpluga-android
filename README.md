@@ -7,7 +7,7 @@ native, interstitial, rewarded, HTML5, and video formats.
 - **Coordinates**: `com.adpluga:adpluga` on Maven Central
 - **minSdk**: 24 (Android 7.0) · **JVM**: 17
 - **Zero Google Play Services dependency**
-- **License**: Proprietary — see [LICENSE](./LICENSE)
+- **License**: Apache-2.0 — see [LICENSE](./LICENSE)
 
 ## Why AdPluga
 

@@ -4,6 +4,7 @@ import android.view.View
 import android.widget.FrameLayout
 import com.adpluga.AdListener
 import com.adpluga.AdPluga
+import com.adpluga.consent.AppContextHolder
 import com.adpluga.errors.AdPlugaError
 import com.adpluga.model.Ad
 import com.adpluga.model.ServeResponse
@@ -20,6 +21,7 @@ public class NativeAd internal constructor(
     public val ad: Ad get() = response.ad
 
     public fun attach(container: View, listener: AdListener? = null): Handle {
+        AppContextHolder.remember(container.context)
         val pluga = AdPluga.maybeInstance
         if (pluga == null) {
             listener?.onError(AdPlugaError.NotInitialized)

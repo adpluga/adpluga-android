@@ -2,6 +2,8 @@ package com.adpluga.client
 
 import com.adpluga.config.Constants
 import com.adpluga.consent.ConsentStore
+import com.adpluga.consent.IabTcfStorage
+import com.adpluga.consent.TcfSource
 import com.adpluga.errors.AdPlugaError
 import com.adpluga.logger.AdPlugaLogger
 import com.adpluga.model.AdPlugaJson
@@ -39,6 +41,7 @@ internal class HttpTransport(
     private val consent: ConsentStore,
     private val clock: () -> Long = System::currentTimeMillis,
     clientProvider: () -> OkHttpClient = ::defaultClient,
+    private val tcfSource: TcfSource = IabTcfStorage,
 ) : AutoCloseable {
 
     private val client: OkHttpClient = clientProvider()
@@ -46,15 +49,20 @@ internal class HttpTransport(
 
     suspend fun serve(slotId: String, format: String?, userHash: String?, refreshSeq: Int = 0): ServeResponse? =
         withContext(Dispatchers.IO) {
+            val state = consent.state
+            val stored = if (state.gdpr && !state.tcfString.isNullOrBlank()) null else readTcf()
+            val gdprApplies = if (state.gdpr) true else stored?.gdprApplies
+            val tcString = state.tcfString?.takeIf { it.isNotBlank() } ?: stored?.tcString?.takeIf { it.isNotBlank() }
             val url = endpoint.toHttpUrl().newBuilder().apply {
                 addPathSegments("v1/serve")
                 addQueryParameter("slot", slotId)
                 if (!format.isNullOrBlank()) addQueryParameter("fmt", format)
                 if (!userHash.isNullOrBlank()) addQueryParameter("u", userHash)
                 if (refreshSeq > 0) addQueryParameter("rq", refreshSeq.toString())
-                if (!consent.state.isPersonalized) addQueryParameter("non_personalized", "true")
+                if (!state.isPersonalized) addQueryParameter("non_personalized", "true")
+                if (gdprApplies != null) addQueryParameter("gdpr", if (gdprApplies) "1" else "0")
             }.build()
-            val request = buildGet(url.toString(), Constants.NETWORK_SERVE_TIMEOUT_MS)
+            val request = buildGet(url.toString(), Constants.NETWORK_SERVE_TIMEOUT_MS, tcString)
             val body = executeWithRetry(request, isSensitive = true) ?: return@withContext null
             AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), body).toModel()
         }
@@ -199,13 +207,21 @@ internal class HttpTransport(
         return exp + jitter
     }
 
-    private fun buildGet(url: String, timeoutMs: Long): Request =
+    private fun readTcf() = try {
+        tcfSource.read()
+    } catch (t: Throwable) {
+        AdPlugaLogger.debug("tcf storage read failed", t)
+        null
+    }
+
+    private fun buildGet(url: String, timeoutMs: Long, consentString: String? = null): Request =
         Request.Builder()
             .url(url)
             .get()
             .header(Constants.KEY_HEADER, publisherKey)
             .header(Constants.PLATFORM_HEADER, Constants.SDK_PLATFORM)
             .header(Constants.VERSION_HEADER, Constants.SDK_VERSION)
+            .apply { if (consentString != null) header(CONSENT_STRING_HEADER, consentString) }
             .tag(TimeoutTag::class.java, TimeoutTag(timeoutMs))
             .build()
 
@@ -240,6 +256,8 @@ internal class HttpTransport(
     }
 
     private companion object {
+        const val CONSENT_STRING_HEADER = "X-Consent-String"
+
         fun defaultClient(): OkHttpClient = OkHttpClient.Builder()
             .callTimeout(Constants.NETWORK_TRACK_TIMEOUT_MS, TimeUnit.MILLISECONDS)
             .connectTimeout(Constants.NETWORK_SERVE_TIMEOUT_MS, TimeUnit.MILLISECONDS)

@@ -13,6 +13,7 @@ import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.adpluga.consent.AppContextHolder
 import com.adpluga.model.Slide
 
 private const val CAPTION_BACKGROUND = "#D1111827"
@@ -47,6 +48,7 @@ internal class CarouselAdView(
     private val settle = Runnable { snapToNearest() }
 
     init {
+        AppContextHolder.remember(context)
         isHorizontalScrollBarEnabled = false
         overScrollMode = OVER_SCROLL_NEVER
         addView(

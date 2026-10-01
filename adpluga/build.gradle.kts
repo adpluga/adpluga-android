@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.adpluga"
-version = "0.7.4"
+version = "0.7.5"
 
 android {
     namespace = "com.adpluga"
@@ -77,8 +77,8 @@ mavenPublishing {
         url.set("https://adpluga.com")
         licenses {
             license {
-                name.set("Proprietary")
-                url.set("https://adpluga.com/legal/sdk-license")
+                name.set("The Apache License, Version 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
                 distribution.set("repo")
             }
         }

@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.annotation.MainThread
 import com.adpluga.AdListener
 import com.adpluga.AdPluga
+import com.adpluga.consent.AppContextHolder
 import com.adpluga.errors.AdPlugaError
 import com.adpluga.logger.AdPlugaLogger
 import com.adpluga.model.AdKind
@@ -30,6 +31,7 @@ public class InterstitialAd internal constructor(
 
     @MainThread
     public fun show(activity: Activity, listener: AdListener? = null) {
+        AppContextHolder.remember(activity)
         val pluga = AdPluga.maybeInstance
         if (pluga == null) {
             listener?.onError(AdPlugaError.NotInitialized)
