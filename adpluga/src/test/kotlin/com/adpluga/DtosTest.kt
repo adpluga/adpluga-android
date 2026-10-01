@@ -193,4 +193,20 @@ class DtosTest {
             .toModel()
         assertNull(bare.ad.altText)
     }
+
+    @Test
+    fun `mediation trackers are parsed and default to empty`() {
+        val json = """
+            { "ad": { "id": "m", "type": "video", "impression_trackers": ["https://ssp/imp"],
+              "click_trackers": ["https://ssp/clk"] }, "track_token": "", "source": "mediation" }
+        """.trimIndent()
+        val model = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), json).toModel()
+        assertEquals(listOf("https://ssp/imp"), model.ad.impressionTrackers)
+        assertEquals(listOf("https://ssp/clk"), model.ad.clickTrackers)
+
+        val bare = """{ "ad": { "id": "h", "type": "image" }, "track_token": "t", "source": "house" }"""
+        val plain = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), bare).toModel()
+        assertTrue(plain.ad.impressionTrackers.isEmpty())
+        assertTrue(plain.ad.clickTrackers.isEmpty())
+    }
 }

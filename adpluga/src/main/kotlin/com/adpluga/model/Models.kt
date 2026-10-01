@@ -69,6 +69,14 @@ public data class Ad(
     public val altText: String? = null,
     public val slides: List<Slide> = emptyList(),
     public val isTest: Boolean = false,
+
+    /**
+     * A mediation bidder's own pixels, fired alongside our impression and
+     * click so the SSP counts (and pays for) what it served. Empty for
+     * first-party creatives.
+     */
+    public val impressionTrackers: List<String> = emptyList(),
+    public val clickTrackers: List<String> = emptyList(),
 )
 
 public data class ServeResponse(

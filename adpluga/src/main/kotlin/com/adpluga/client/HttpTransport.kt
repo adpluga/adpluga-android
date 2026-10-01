@@ -1,6 +1,8 @@
 package com.adpluga.client
 
+import android.webkit.WebSettings
 import com.adpluga.config.Constants
+import com.adpluga.consent.AppContextHolder
 import com.adpluga.consent.ConsentStore
 import com.adpluga.consent.IabTcfStorage
 import com.adpluga.consent.TcfSource
@@ -42,7 +44,11 @@ internal class HttpTransport(
     private val clock: () -> Long = System::currentTimeMillis,
     clientProvider: () -> OkHttpClient = ::defaultClient,
     private val tcfSource: TcfSource = IabTcfStorage,
+    private val userAgentSource: () -> String? = ::systemUserAgent,
 ) : AutoCloseable {
+
+    @Volatile
+    private var deviceUserAgent: String? = null
 
     private val client: OkHttpClient = clientProvider()
     private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
@@ -63,6 +69,9 @@ internal class HttpTransport(
                 if (gdprApplies != null) addQueryParameter("gdpr", if (gdprApplies) "1" else "0")
             }.build()
             val request = buildGet(url.toString(), Constants.NETWORK_SERVE_TIMEOUT_MS, tcString)
+                .newBuilder()
+                .apply { userAgent()?.let { header(DEVICE_UA_HEADER, it) } }
+                .build()
             val body = executeWithRetry(request, isSensitive = true) ?: return@withContext null
             AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), body).toModel()
         }
@@ -126,15 +135,28 @@ internal class HttpTransport(
         return "${endpoint.trimEnd('/')}$separator$url"
     }
 
+    /**
+     * Fires a one-shot GET. Our own endpoint gets the key and SDK headers; a
+     * bidder's pixel (burl, impression and click trackers) gets only the
+     * device User-Agent, so the SSP sees the same UA it priced in the bid
+     * request and never receives the publisher key.
+     */
     suspend fun beacon(url: String) {
         withContext(Dispatchers.IO) {
             try {
+                val target = absolute(url)
                 val request = Request.Builder()
-                    .url(absolute(url))
+                    .url(target)
                     .get()
-                    .header(Constants.KEY_HEADER, publisherKey)
-                    .header(Constants.PLATFORM_HEADER, Constants.SDK_PLATFORM)
-                    .header(Constants.VERSION_HEADER, Constants.SDK_VERSION)
+                    .apply {
+                        if (isFirstParty(target)) {
+                            header(Constants.KEY_HEADER, publisherKey)
+                            header(Constants.PLATFORM_HEADER, Constants.SDK_PLATFORM)
+                            header(Constants.VERSION_HEADER, Constants.SDK_VERSION)
+                        } else {
+                            userAgent()?.let { header("User-Agent", it) }
+                        }
+                    }
                     .build()
                 client.newCall(request).withTimeout(Constants.NETWORK_TRACK_TIMEOUT_MS)
                     .await().use { /* drain and close */ }
@@ -144,6 +166,24 @@ internal class HttpTransport(
                 AdPlugaLogger.debug("beacon failed url=$url", t)
             }
         }
+    }
+
+    private fun isFirstParty(url: String): Boolean = try {
+        url.toHttpUrl().host == endpoint.toHttpUrl().host
+    } catch (_: IllegalArgumentException) {
+        false
+    }
+
+    private fun userAgent(): String? {
+        deviceUserAgent?.let { return it }
+        val ua = try {
+            userAgentSource()?.takeIf { it.isNotBlank() }
+        } catch (t: Throwable) {
+            AdPlugaLogger.debug("user agent lookup failed", t)
+            null
+        }
+        deviceUserAgent = ua
+        return ua
     }
 
     suspend fun postTelemetry(body: String) {
@@ -257,6 +297,22 @@ internal class HttpTransport(
 
     private companion object {
         const val CONSENT_STRING_HEADER = "X-Consent-String"
+        const val DEVICE_UA_HEADER = "X-Device-User-Agent"
+
+        /**
+         * The WebView User-Agent is what an SSP expects in device.ua for an
+         * in-app impression; OkHttp's own UA would read as a server. Falls
+         * back to the Dalvik UA before any view has handed us a context.
+         */
+        fun systemUserAgent(): String? {
+            AppContextHolder.context?.let { ctx ->
+                try {
+                    return WebSettings.getDefaultUserAgent(ctx)
+                } catch (_: Throwable) {
+                }
+            }
+            return System.getProperty("http.agent")
+        }
 
         fun defaultClient(): OkHttpClient = OkHttpClient.Builder()
             .callTimeout(Constants.NETWORK_TRACK_TIMEOUT_MS, TimeUnit.MILLISECONDS)

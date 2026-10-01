@@ -31,6 +31,8 @@ internal data class AdDto(
     @SerialName("asset_url") val assetUrl: String? = null,
     val html: String? = null,
     @SerialName("billing_url") val billingUrl: String? = null,
+    @SerialName("impression_trackers") val impressionTrackers: List<String> = emptyList(),
+    @SerialName("click_trackers") val clickTrackers: List<String> = emptyList(),
     val title: String? = null,
     @SerialName("alt_text") val altText: String? = null,
     val body: String? = null,
@@ -76,6 +78,8 @@ internal data class AdDto(
             .filter { it.assetUrl.isNotEmpty() }
             .map { Slide(it.assetUrl, it.title, it.body, it.ctaText) },
         isTest = test,
+        impressionTrackers = impressionTrackers,
+        clickTrackers = clickTrackers,
     )
 
     // buildNativeAssets prefers the flat contract fields and falls back to

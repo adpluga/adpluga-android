@@ -4,6 +4,21 @@ All notable changes to the AdPluga Android SDK are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.6] — 2026-10
+
+### Added
+- Fires a mediation bidder's own impression and click trackers
+  (`impression_trackers`, `click_trackers` on the serve response) with ours.
+  The SSP counts the impression it pays for from its VAST `<Impression>` or
+  native `imptrackers`, which were never fired before.
+- Sends the device User-Agent on `/v1/serve` (`X-Device-User-Agent`) so a
+  mediation bid request carries a real `device.ua`; SSPs drop or discount
+  requests whose UA reads as a server.
+
+### Fixed
+- A bidder's pixel (burl and trackers) no longer receives the SDK headers or the publisher key;
+  it gets the device User-Agent instead.
+
 ## [0.7.5] — 2026-10
 
 ### Added

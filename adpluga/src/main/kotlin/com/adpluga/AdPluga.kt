@@ -155,6 +155,7 @@ public class AdPluga private constructor(
                         payload = mapOf("event" to "impression", "slot" to slotId, "ad" to ad.id),
                     )
                 }
+                ad.impressionTrackers.forEach { transport.beacon(it) }
                 telemetry.record(SdkEventType.Impression)
                 emit(SdkEvent.Impression(slotId = slotId, adId = ad.id))
             } catch (t: Throwable) {
@@ -200,6 +201,7 @@ public class AdPluga private constructor(
                         payload = mapOf("event" to "click", "slot" to slotId, "ad" to ad.id),
                     )
                 }
+                ad.clickTrackers.forEach { transport.beacon(it) }
                 telemetry.record(SdkEventType.Click)
                 emit(SdkEvent.Click(slotId = slotId, adId = ad.id))
             } catch (t: Throwable) {
