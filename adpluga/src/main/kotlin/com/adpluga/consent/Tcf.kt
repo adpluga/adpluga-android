@@ -17,8 +17,10 @@ internal object AppContextHolder {
     var context: Context? = null
         private set
 
+    // Always the latest application context: an app has one, so this is a
+    // no-op in production, and holding the first one ever seen pinned tests
+    // (and any process that recreates its Application) to a stale instance.
     fun remember(context: Context) {
-        if (this.context != null) return
         this.context = try {
             context.applicationContext
         } catch (_: Throwable) {

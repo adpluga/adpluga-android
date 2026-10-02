@@ -25,6 +25,9 @@ public enum class AdSource(public val wire: String) {
     HOUSE("house"),
     DEAL("deal"),
     MEDIATION("mediation"),
+
+    /** A network AdPluga sells to on the publisher's behalf; paid demand. */
+    PLATFORM_MEDIATION("platform_mediation"),
     TEST("test");
 
     public companion object {

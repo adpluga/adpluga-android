@@ -17,6 +17,7 @@ import com.adpluga.consent.AppContextHolder
 import com.adpluga.errors.AdPlugaError
 import com.adpluga.logger.AdPlugaLogger
 import com.adpluga.model.AdKind
+import com.adpluga.model.AdSource
 import com.adpluga.model.ServeResponse
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +29,9 @@ public class InterstitialAd internal constructor(
     private val response: ServeResponse,
     private val slotId: String,
 ) {
+
+    /** Where the ad came from; an adapter treats [AdSource.HOUSE] as no fill. */
+    public val source: AdSource get() = response.ad.source
 
     @MainThread
     public fun show(activity: Activity, listener: AdListener? = null) {

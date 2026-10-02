@@ -18,6 +18,7 @@ import com.adpluga.errors.AdPlugaError
 import com.adpluga.logger.AdPlugaLogger
 import com.adpluga.model.Ad
 import com.adpluga.model.AdKind
+import com.adpluga.model.AdSource
 import com.adpluga.model.ServeResponse
 import com.adpluga.viewability.ViewabilityTracker
 import kotlinx.coroutines.CancellationException
@@ -41,6 +42,15 @@ public class AdView @JvmOverloads constructor(
     private var htmlView: HtmlAdView? = null
     private var videoView: VideoAdView? = null
     private var carouselView: CarouselAdView? = null
+
+    /**
+     * Set by an adapter that runs this view inside another SDK's waterfall
+     * (AdMob, AppLovin MAX, LevelPlay). The host owns refresh and retry, so
+     * the view never rotates or retries by itself, and the house fallback is
+     * reported as [AdPlugaError.NoFill] instead of drawn, letting the next
+     * network fill the slot.
+     */
+    public var mediated: Boolean = false
 
     private var listener: AdListener? = null
     private var loadJob: Job? = null
@@ -94,6 +104,10 @@ public class AdView @JvmOverloads constructor(
                         listener?.onError(AdPlugaError.Network(0, "no fill"))
                         scheduleRetry(pluga)
                     }
+                    return@launch
+                }
+                if (mediated && response.ad.source == AdSource.HOUSE) {
+                    withContext(Dispatchers.Main) { listener?.onError(AdPlugaError.NoFill) }
                     return@launch
                 }
                 if (response.ad.kind !in RENDERABLE_KINDS) {
@@ -391,6 +405,7 @@ public class AdView @JvmOverloads constructor(
     @MainThread
     private fun scheduleRefresh(response: ServeResponse) {
         cancelRefresh()
+        if (mediated) return
         val secs = response.refreshAfterSeconds
         if (secs <= 0) return
         val floor = if (response.ad.isTest) {
@@ -412,6 +427,7 @@ public class AdView @JvmOverloads constructor(
     @MainThread
     private fun scheduleRetry(pluga: AdPluga) {
         cancelRefresh()
+        if (mediated) return
         val base = if (pluga.isTestKey) {
             Constants.MIN_REFRESH_SECONDS_TEST
         } else {

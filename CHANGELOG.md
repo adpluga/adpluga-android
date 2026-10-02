@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [0.7.6] — 2026-10
 
 ### Added
+- Mediation adapters so AdPluga runs as a line item inside another SDK's
+  waterfall: `com.adpluga.mediation.admob.AdPlugaAdMobAdapter` (AdMob custom
+  event), `com.applovin.mediation.adapters.AdPlugaMediationAdapter` (AppLovin
+  MAX custom network) and `com.ironsource.adapters.custom.adpluga.*`
+  (LevelPlay custom network). Banner, interstitial and rewarded. They ship as
+  separate modules, so the core SDK keeps no ad-network dependency.
+- `AdView.mediated`: inside a host waterfall the view never rotates or retries
+  on its own and reports the house fallback as `AdPlugaError.NoFill`.
+- `AdPlugaError.NoFill`, `InterstitialAd.source`, `RewardedAd.source`,
+  `AdPluga.SDK_VERSION` and `MediationSlot`.
 - Fires a mediation bidder's own impression and click trackers
   (`impression_trackers`, `click_trackers` on the serve response) with ours.
   The SSP counts the impression it pays for from its VAST `<Impression>` or
@@ -16,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   requests whose UA reads as a server.
 
 ### Fixed
+- `platform_mediation` was read as `HOUSE`, so paid demand from AdPluga's
+  platform networks looked like the unpaid fallback.
+- The IABTCF context holder kept the first context it ever saw; it now keeps
+  the current application context.
 - A bidder's pixel (burl and trackers) no longer receives the SDK headers or the publisher key;
   it gets the device User-Agent instead.
 

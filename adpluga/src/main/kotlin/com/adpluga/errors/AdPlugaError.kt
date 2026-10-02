@@ -35,6 +35,15 @@ public sealed class AdPlugaError(
     public class UpgradeRequired internal constructor(public val minVersion: String) :
         AdPlugaError("SDK upgrade required, minimum version=$minVersion")
 
+    /**
+     * Nothing paid to show. Raised instead of drawing the house fallback when
+     * the slot runs inside another SDK's waterfall, so the next network can
+     * still fill it.
+     */
+    public object NoFill : AdPlugaError("no fill") {
+        private fun readResolve(): Any = NoFill
+    }
+
     public object ConsentDenied : AdPlugaError("consent denied") {
         private fun readResolve(): Any = ConsentDenied
     }

@@ -209,4 +209,13 @@ class DtosTest {
         assertTrue(plain.ad.impressionTrackers.isEmpty())
         assertTrue(plain.ad.clickTrackers.isEmpty())
     }
+
+    // Regression: platform_mediation fell back to HOUSE, so an adapter threw
+    // away paid demand as if it were the unpaid fallback.
+    @Test
+    fun `platform mediation is paid demand, not house`() {
+        val json = """{ "ad": { "id": "p", "type": "image" }, "track_token": "t", "source": "platform_mediation" }"""
+        val model = AdPlugaJson.decodeFromString(ServeResponseDto.serializer(), json).toModel()
+        assertEquals(com.adpluga.model.AdSource.PLATFORM_MEDIATION, model.ad.source)
+    }
 }

@@ -287,6 +287,9 @@ public class AdPluga private constructor(
          */
         public const val DEFAULT_ENDPOINT: String = Constants.DEFAULT_ENDPOINT
 
+        /** This SDK's version, reported by the mediation adapters to their host. */
+        public const val SDK_VERSION: String = Constants.SDK_VERSION
+
         @JvmStatic
         @JvmOverloads
         public fun initialize(

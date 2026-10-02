@@ -22,3 +22,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "adpluga-android"
 include(":adpluga")
+include(":adpluga-admob")
+include(":adpluga-applovin")
+include(":adpluga-levelplay")
